@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Spotify Search</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <section class="panel">
+        <h1>Spotify Search</h1>
+        <form id="searchForm" class="search-form">
+          <input
+            id="searchInput"
+            type="search"
+            name="q"
+            placeholder="曲名・アーティスト名"
+            autocomplete="off"
+            required
+          />
+          <button type="submit">検索</button>
+        </form>
+        <label class="field">
+          <span>ニックネーム</span>
+          <input
+            id="nicknameInput"
+            type="text"
+            name="nickname"
+            placeholder="例: たろう"
+            autocomplete="off"
+            maxlength="40"
+          />
+        </label>
+        <p id="status" class="status"></p>
+        <div id="results" class="results"></div>
+      </section>
+
+      <section class="panel">
+        <div class="section-header">
+          <h2>リクエスト済み</h2>
+          <button id="refreshQueueButton" class="secondary-button" type="button">
+            更新
+          </button>
+        </div>
+        <div id="queue" class="queue"></div>
+      </section>
+    </main>
+
+    <dialog id="mentorDialog" class="dialog">
+      <form id="requestForm" method="dialog">
+        <h2>メンター確認</h2>
+        <p id="selectedTrackText" class="dialog-track"></p>
+        <label class="field">
+          <span>確認パスワード</span>
+          <input
+            id="mentorPasswordInput"
+            type="password"
+            autocomplete="off"
+            required
+          />
+        </label>
+        <div class="dialog-actions">
+          <button id="cancelRequestButton" class="secondary-button" type="button">
+            キャンセル
+          </button>
+          <button type="submit">送信</button>
+        </div>
+      </form>
+    </dialog>
+
+    <script src="/config.js"></script>
+    <script src="/app.js" type="module"></script>
+  </body>
+</html>
