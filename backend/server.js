@@ -1,12 +1,12 @@
 import { createServer } from "node:http";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import { existsSync, readFileSync } from "node:fs";
-import crypto from "node:crypto";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const publicDir = path.join(__dirname, "public");
+const rootDir = path.resolve(__dirname, "..");
+const frontendDir = path.join(rootDir, "frontend");
 
 loadEnvFile();
 
@@ -20,12 +20,6 @@ const playlistId = process.env.SPOTIFY_PLAYLIST_ID;
 const refreshToken = process.env.SPOTIFY_REFRESH_TOKEN;
 const maxDurationMs = Number(process.env.MAX_DURATION_MS || 420000);
 const allowExplicit = process.env.ALLOW_EXPLICIT === "true";
-const requestsFile =
-  process.env.REQUESTS_FILE || path.join(__dirname, "data", "requests.json");
-const allowedOrigins = (process.env.ALLOWED_ORIGINS || "")
-  .split(",")
-  .map((origin) => origin.trim())
-  .filter(Boolean);
 
 let cachedClientToken = null;
 let clientTokenExpiresAt = 0;
@@ -35,23 +29,10 @@ const rateLimitMap = new Map();
 
 const server = createServer(async (req, res) => {
   try {
-    setCorsHeaders(req, res);
-
-    if (req.method === "OPTIONS") {
-      res.writeHead(204);
-      res.end();
-      return;
-    }
-
     const url = new URL(req.url || "/", `http://${req.headers.host}`);
 
     if (url.pathname === "/api/search" && req.method === "GET") {
       await handleSearch(url, res);
-      return;
-    }
-
-    if (url.pathname === "/api/requests" && req.method === "GET") {
-      await handleGetRequests(res);
       return;
     }
 
@@ -65,12 +46,7 @@ const server = createServer(async (req, res) => {
       return;
     }
 
-    if (url.pathname === "/config.js" && req.method === "GET") {
-      sendClientConfig(res);
-      return;
-    }
-
-    await serveStatic(url.pathname, res);
+    await serveFrontend(url.pathname, res);
   } catch (error) {
     console.error(error);
     sendJson(res, 500, { error: "Server error" });
@@ -123,19 +99,17 @@ async function handleSearch(url, res) {
   sendJson(res, 200, { tracks });
 }
 
-async function handleGetRequests(res) {
-  const requests = await readRequests();
-  sendJson(res, 200, {
-    requests: requests
-      .filter((request) => request.status === "approved")
-      .sort((a, b) => new Date(a.created_at) - new Date(b.created_at)),
-  });
-}
-
 async function handleCreateRequest(req, res) {
   if (!clientId || !clientSecret) {
     sendJson(res, 500, {
       error: "SPOTIFY_CLIENT_ID and SPOTIFY_CLIENT_SECRET are required",
+    });
+    return;
+  }
+
+  if (!playlistId || !refreshToken) {
+    sendJson(res, 500, {
+      error: "SPOTIFY_PLAYLIST_ID and SPOTIFY_REFRESH_TOKEN are required",
     });
     return;
   }
@@ -154,16 +128,10 @@ async function handleCreateRequest(req, res) {
 
   const body = await readJsonBody(req);
   const password = String(body.mentorPassword || "");
-  const nickname = String(body.nickname || "").trim();
   const trackId = String(body.trackId || "").trim();
 
   if (password !== mentorPassword) {
     sendJson(res, 401, { error: "メンターパスワードが違います" });
-    return;
-  }
-
-  if (!nickname) {
-    sendJson(res, 400, { error: "ニックネームを入力してください" });
     return;
   }
 
@@ -184,65 +152,15 @@ async function handleCreateRequest(req, res) {
     return;
   }
 
-  const requests = await readRequests();
-  const normalizedNickname = normalizeNickname(nickname);
-
-  if (
-    requests.some(
-      (request) =>
-        request.status === "approved" &&
-        normalizeNickname(request.nickname) === normalizedNickname,
-    )
-  ) {
-    sendJson(res, 409, {
-      error: "このニックネームではすでにリクエスト済みです",
-    });
+  try {
+    await addTrackToPlaylist(track.uri);
+  } catch (error) {
+    console.error("Failed to add track to Spotify playlist", error);
+    sendJson(res, 502, { error: "Spotifyプレイリスト追加に失敗しました" });
     return;
   }
 
-  if (
-    requests.some(
-      (request) =>
-        request.status === "approved" && request.spotify_track_id === track.id,
-    )
-  ) {
-    sendJson(res, 409, { error: "この曲はすでにリクエストされています" });
-    return;
-  }
-
-  const createdAt = new Date().toISOString();
-  const requestRecord = {
-    id: crypto.randomUUID(),
-    nickname,
-    spotify_track_id: track.id,
-    spotify_uri: track.uri,
-    track_name: track.name,
-    artist_name: track.artists,
-    album_image: track.image,
-    duration_ms: track.durationMs,
-    explicit: track.explicit,
-    status: "approved",
-    spotify_added: false,
-    spotify_error: "",
-    created_at: createdAt,
-  };
-
-  if (playlistId && refreshToken) {
-    try {
-      await addTrackToPlaylist(track.uri);
-      requestRecord.spotify_added = true;
-    } catch (error) {
-      console.error("Failed to add track to Spotify playlist", error);
-      requestRecord.spotify_error = "Spotifyプレイリスト追加に失敗しました";
-    }
-  } else {
-    requestRecord.spotify_error = "Spotifyプレイリスト追加は未設定です";
-  }
-
-  requests.push(requestRecord);
-  await writeRequests(requests);
-
-  sendJson(res, 201, { request: requestRecord });
+  sendJson(res, 201, { track });
 }
 
 async function getSpotifyTrack(trackId) {
@@ -361,20 +279,6 @@ function normalizeSpotifyTrack(track) {
   };
 }
 
-async function readRequests() {
-  if (!existsSync(requestsFile)) {
-    return [];
-  }
-
-  const body = await readFile(requestsFile, "utf8");
-  return JSON.parse(body);
-}
-
-async function writeRequests(requests) {
-  await mkdir(path.dirname(requestsFile), { recursive: true });
-  await writeFile(requestsFile, `${JSON.stringify(requests, null, 2)}\n`);
-}
-
 async function readJsonBody(req) {
   let body = "";
 
@@ -393,12 +297,12 @@ async function readJsonBody(req) {
   return JSON.parse(body);
 }
 
-async function serveStatic(pathname, res) {
+async function serveFrontend(pathname, res) {
   const safePath = pathname === "/" ? "/index.html" : pathname;
-  const filePath = path.normalize(path.join(publicDir, safePath));
+  const filePath = path.normalize(path.join(frontendDir, safePath));
 
   if (
-    !filePath.startsWith(`${publicDir}${path.sep}`) ||
+    !filePath.startsWith(`${frontendDir}${path.sep}`) ||
     !existsSync(filePath)
   ) {
     sendText(res, 404, "Not found");
@@ -435,17 +339,6 @@ function checkRateLimit(req) {
   return true;
 }
 
-function setCorsHeaders(req, res) {
-  const origin = req.headers.origin;
-
-  if (origin && allowedOrigins.includes(origin)) {
-    res.setHeader("Access-Control-Allow-Origin", origin);
-    res.setHeader("Vary", "Origin");
-    res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-  }
-}
-
 function sendJson(res, status, body) {
   res.writeHead(status, { "Content-Type": "application/json; charset=utf-8" });
   res.end(JSON.stringify(body));
@@ -456,21 +349,8 @@ function sendText(res, status, body) {
   res.end(body);
 }
 
-function sendClientConfig(res) {
-  const apiBaseUrl = process.env.DJ_API_BASE_URL || "";
-  res.writeHead(200, {
-    "Content-Type": "text/javascript; charset=utf-8",
-    "Cache-Control": "no-store",
-  });
-  res.end(`window.DJ_API_BASE_URL = ${JSON.stringify(apiBaseUrl)};\n`);
-}
-
-function normalizeNickname(nickname) {
-  return nickname.trim().toLowerCase();
-}
-
 function loadEnvFile() {
-  const envPath = path.join(__dirname, ".env");
+  const envPath = path.join(rootDir, ".env");
 
   if (!existsSync(envPath)) {
     return;

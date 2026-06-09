@@ -21,29 +21,8 @@
           />
           <button type="submit">検索</button>
         </form>
-        <label class="field">
-          <span>ニックネーム</span>
-          <input
-            id="nicknameInput"
-            type="text"
-            name="nickname"
-            placeholder="例: たろう"
-            autocomplete="off"
-            maxlength="40"
-          />
-        </label>
         <p id="status" class="status"></p>
         <div id="results" class="results"></div>
-      </section>
-
-      <section class="panel">
-        <div class="section-header">
-          <h2>リクエスト済み</h2>
-          <button id="refreshQueueButton" class="secondary-button" type="button">
-            更新
-          </button>
-        </div>
-        <div id="queue" class="queue"></div>
       </section>
     </main>
 
@@ -61,7 +40,11 @@
           />
         </label>
         <div class="dialog-actions">
-          <button id="cancelRequestButton" class="secondary-button" type="button">
+          <button
+            id="cancelRequestButton"
+            class="secondary-button"
+            type="button"
+          >
             キャンセル
           </button>
           <button type="submit">送信</button>
@@ -69,7 +52,6 @@
       </form>
     </dialog>
 
-    <script src="/config.js"></script>
     <script src="/app.js" type="module"></script>
   </body>
 </html>

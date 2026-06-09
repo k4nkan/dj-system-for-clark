@@ -1,6 +1,11 @@
 :root {
   color-scheme: light;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family:
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
   background: #f4f5f7;
   color: #1f2933;
 }
@@ -103,22 +108,12 @@ button:disabled {
   color: #52616f;
 }
 
-.section-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 16px;
-}
-
-.results,
-.queue {
+.results {
   display: grid;
   gap: 12px;
 }
 
-.track,
-.queue-item {
+.track {
   display: grid;
   grid-template-columns: 72px 1fr auto;
   gap: 14px;
@@ -128,12 +123,7 @@ button:disabled {
   padding: 12px;
 }
 
-.queue-item {
-  grid-template-columns: 56px 1fr;
-}
-
 .track img,
-.queue-item img,
 .cover-placeholder {
   width: 72px;
   height: 72px;
@@ -142,14 +132,7 @@ button:disabled {
   background: #edf1f5;
 }
 
-.queue-item img,
-.queue-item .cover-placeholder {
-  width: 56px;
-  height: 56px;
-}
-
-.track p,
-.queue-item p {
+.track p {
   margin: 0;
   color: #52616f;
   font-size: 14px;

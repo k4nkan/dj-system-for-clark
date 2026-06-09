@@ -6,23 +6,9 @@ services:
     environment:
       HOST: 0.0.0.0
       PORT: 3000
-    ports:
-      - "3000:3000"
-    volumes:
-      - ./data:/app/data
 
-  tunnel-quick:
+  tunnel:
     image: cloudflare/cloudflared:latest
-    profiles:
-      - quick-tunnel
     command: tunnel --no-autoupdate --url http://app:3000
-    depends_on:
-      - app
-
-  tunnel-named:
-    image: cloudflare/cloudflared:latest
-    profiles:
-      - named-tunnel
-    command: tunnel --no-autoupdate run --token ${CLOUDFLARE_TUNNEL_TOKEN}
     depends_on:
       - app
