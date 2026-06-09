@@ -93,12 +93,12 @@ async function handlePlaylistAdd(req, res) {
   const trackUri = String(body.trackUri || "").trim();
 
   if (mentorPassword !== config.mentorPassword) {
-    sendJson(res, 401, { error: "メンターパスワードが違います" });
+    sendJson(res, 401, { error: "Invalid password" });
     return;
   }
 
   if (!trackUri.startsWith("spotify:track:")) {
-    sendJson(res, 400, { error: "曲を選んでください" });
+    sendJson(res, 400, { error: "Select a track" });
     return;
   }
 
@@ -278,14 +278,14 @@ function getSpotifyErrorMessage(error) {
   const message = String(error?.message || "");
 
   if (/invalid refresh token|invalid_grant/i.test(message)) {
-    return "Spotify refresh tokenが無効です";
+    return "Invalid Spotify refresh token";
   }
 
   if (/insufficient.*scope|scope/i.test(message)) {
-    return "Spotify tokenの権限が足りません";
+    return "Spotify token is missing playlist scope";
   }
 
-  return "Spotifyプレイリスト追加に失敗しました";
+  return "Failed to add track to Spotify playlist";
 }
 
 function sendJson(res, status, body) {

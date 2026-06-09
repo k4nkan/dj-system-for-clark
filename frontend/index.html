@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -15,11 +15,11 @@
             id="searchInput"
             type="search"
             name="q"
-            placeholder="曲名・アーティスト名"
+            placeholder="Track or artist"
             autocomplete="off"
             required
           />
-          <button type="submit">検索</button>
+          <button type="submit">Search</button>
         </form>
         <p id="status" class="status"></p>
         <div id="results" class="results"></div>
@@ -28,10 +28,10 @@
 
     <dialog id="mentorDialog" class="dialog">
       <form id="requestForm" method="dialog">
-        <h2>メンター確認</h2>
+        <h2>Confirm</h2>
         <p id="selectedTrackText" class="dialog-track"></p>
         <label class="field">
-          <span>確認パスワード</span>
+          <span>Password</span>
           <input
             id="mentorPasswordInput"
             type="password"
@@ -45,9 +45,9 @@
             class="secondary-button"
             type="button"
           >
-            キャンセル
+            Cancel
           </button>
-          <button type="submit">送信</button>
+          <button type="submit">Add</button>
         </div>
       </form>
     </dialog>

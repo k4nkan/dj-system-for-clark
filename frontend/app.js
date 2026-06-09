@@ -26,7 +26,7 @@ async function onSearchSubmit(event) {
   }
 
   setSearchLoading(true);
-  setStatus("検索中...");
+  setStatus("Searching...");
   elements.results.innerHTML = "";
 
   try {
@@ -54,7 +54,7 @@ async function onRequestSubmit(event) {
       trackUri: selectedTrack.uri,
     });
 
-    setStatus(`Spotifyプレイリストに追加しました: ${selectedTrack.name}`);
+    setStatus(`Added: ${selectedTrack.name}`);
     closeRequestDialog();
   } catch (error) {
     setStatus(error.message);
@@ -80,7 +80,7 @@ async function apiRequest(path, options) {
   const data = await response.json().catch(() => ({}));
 
   if (!response.ok) {
-    throw new Error(data.error || "リクエストに失敗しました");
+    throw new Error(data.error || "Request failed");
   }
 
   return data;
@@ -90,11 +90,11 @@ function renderTracks(tracks) {
   elements.results.innerHTML = "";
 
   if (tracks.length === 0) {
-    setStatus("該当する曲がありません");
+    setStatus("No results");
     return;
   }
 
-  setStatus(`${tracks.length}件`);
+  setStatus(`${tracks.length} results`);
 
   for (const track of tracks) {
     elements.results.append(createTrackCard(track));
@@ -150,7 +150,7 @@ function createTrackActions(track) {
 
   actions.className = "track-actions";
   button.type = "button";
-  button.textContent = "リクエストする";
+  button.textContent = "Add";
   button.addEventListener("click", () => openRequestDialog(track));
 
   actions.append(button);
