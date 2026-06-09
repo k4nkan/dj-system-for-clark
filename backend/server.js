@@ -118,7 +118,7 @@ async function searchSpotifyTracks(query) {
   const url = new URL(`${spotifyApiBase}/search`);
   url.searchParams.set("type", "track");
   url.searchParams.set("q", query);
-  url.searchParams.set("limit", "12");
+  url.searchParams.set("limit", "30");
   url.searchParams.set("market", config.spotify.market);
 
   const data = await spotifyJson(url, token);
