@@ -1,167 +1,185 @@
-const searchForm = document.querySelector("#searchForm");
-const requestForm = document.querySelector("#requestForm");
-const searchInput = document.querySelector("#searchInput");
-const mentorPasswordInput = document.querySelector("#mentorPasswordInput");
-const statusEl = document.querySelector("#status");
-const resultsEl = document.querySelector("#results");
-const mentorDialog = document.querySelector("#mentorDialog");
-const selectedTrackText = document.querySelector("#selectedTrackText");
-const cancelRequestButton = document.querySelector("#cancelRequestButton");
+const elements = {
+  searchForm: document.querySelector("#searchForm"),
+  requestForm: document.querySelector("#requestForm"),
+  searchInput: document.querySelector("#searchInput"),
+  mentorPasswordInput: document.querySelector("#mentorPasswordInput"),
+  status: document.querySelector("#status"),
+  results: document.querySelector("#results"),
+  mentorDialog: document.querySelector("#mentorDialog"),
+  selectedTrackText: document.querySelector("#selectedTrackText"),
+  cancelRequestButton: document.querySelector("#cancelRequestButton"),
+};
 
 let selectedTrack = null;
 
-searchForm.addEventListener("submit", async (event) => {
+elements.searchForm.addEventListener("submit", onSearchSubmit);
+elements.requestForm.addEventListener("submit", onRequestSubmit);
+elements.cancelRequestButton.addEventListener("click", closeRequestDialog);
+
+async function onSearchSubmit(event) {
   event.preventDefault();
 
-  const q = searchInput.value.trim();
+  const query = elements.searchInput.value.trim();
 
-  if (!q) {
+  if (!query) {
     return;
   }
 
   setSearchLoading(true);
-  statusEl.textContent = "検索中...";
-  resultsEl.innerHTML = "";
+  setStatus("検索中...");
+  elements.results.innerHTML = "";
 
   try {
-    const response = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.error || "検索に失敗しました");
-    }
-
+    const data = await apiGet(`/api/search?q=${encodeURIComponent(query)}`);
     renderTracks(data.tracks || []);
   } catch (error) {
-    statusEl.textContent = error.message;
+    setStatus(error.message);
   } finally {
     setSearchLoading(false);
   }
-});
+}
 
-requestForm.addEventListener("submit", async (event) => {
+async function onRequestSubmit(event) {
   event.preventDefault();
 
   if (!selectedTrack) {
     return;
   }
 
-  const mentorPassword = mentorPasswordInput.value;
-
   setRequestLoading(true);
 
   try {
-    const response = await fetch("/api/requests", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        mentorPassword,
-        trackId: selectedTrack.id,
-      }),
+    await apiPost("/api/requests", {
+      mentorPassword: elements.mentorPasswordInput.value,
+      trackUri: selectedTrack.uri,
     });
-    const data = await response.json();
 
-    if (!response.ok) {
-      throw new Error(data.error || "リクエストに失敗しました");
-    }
-
-    statusEl.textContent = `Spotifyプレイリストに追加しました: ${data.track.name}`;
-    closeDialog();
+    setStatus(`Spotifyプレイリストに追加しました: ${selectedTrack.name}`);
+    closeRequestDialog();
   } catch (error) {
-    statusEl.textContent = error.message;
+    setStatus(error.message);
   } finally {
     setRequestLoading(false);
   }
-});
+}
 
-cancelRequestButton.addEventListener("click", closeDialog);
+async function apiGet(path) {
+  return apiRequest(path);
+}
+
+async function apiPost(path, body) {
+  return apiRequest(path, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+}
+
+async function apiRequest(path, options) {
+  const response = await fetch(path, options);
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw new Error(data.error || "リクエストに失敗しました");
+  }
+
+  return data;
+}
 
 function renderTracks(tracks) {
+  elements.results.innerHTML = "";
+
   if (tracks.length === 0) {
-    statusEl.textContent = "該当する曲がありません";
+    setStatus("該当する曲がありません");
     return;
   }
 
-  statusEl.textContent = `${tracks.length}件`;
-  resultsEl.innerHTML = "";
+  setStatus(`${tracks.length}件`);
 
   for (const track of tracks) {
-    const article = document.createElement("article");
-    article.className = "track";
-
-    const cover = track.image
-      ? createImage(track.image, `${track.album} cover`)
-      : createCoverPlaceholder();
-
-    const info = document.createElement("div");
-    const title = document.createElement("h3");
-    const meta = document.createElement("p");
-    const album = document.createElement("p");
-    const duration = document.createElement("p");
-
-    title.textContent = track.name;
-    meta.textContent = track.artists;
-    album.textContent = track.album;
-    duration.textContent = `${formatDuration(track.durationMs)}${
-      track.explicit ? " / Explicit" : ""
-    }`;
-
-    info.append(title, meta, album, duration);
-
-    const actions = document.createElement("div");
-    actions.className = "track-actions";
-
-    const requestButton = document.createElement("button");
-    requestButton.type = "button";
-    requestButton.textContent = "リクエストする";
-    requestButton.addEventListener("click", () => openRequestDialog(track));
-
-    actions.append(requestButton);
-    article.append(cover, info, actions);
-
-    resultsEl.append(article);
+    elements.results.append(createTrackCard(track));
   }
 }
 
-function openRequestDialog(track) {
-  selectedTrack = track;
-  selectedTrackText.textContent = `${track.name} / ${track.artists}`;
-  mentorPasswordInput.value = "";
-
-  if (typeof mentorDialog.showModal === "function") {
-    mentorDialog.showModal();
-  } else {
-    mentorDialog.setAttribute("open", "");
-  }
-
-  mentorPasswordInput.focus();
+function createTrackCard(track) {
+  const article = document.createElement("article");
+  article.className = "track";
+  article.append(
+    createCover(track),
+    createTrackInfo(track),
+    createTrackActions(track),
+  );
+  return article;
 }
 
-function closeDialog() {
-  selectedTrack = null;
-  mentorPasswordInput.value = "";
-
-  if (typeof mentorDialog.close === "function") {
-    mentorDialog.close();
-  } else {
-    mentorDialog.removeAttribute("open");
+function createCover(track) {
+  if (!track.image) {
+    const placeholder = document.createElement("div");
+    placeholder.className = "cover-placeholder";
+    return placeholder;
   }
-}
 
-function createImage(src, alt) {
   const img = document.createElement("img");
-  img.src = src;
-  img.alt = alt;
+  img.src = track.image;
+  img.alt = `${track.album} cover`;
   img.loading = "lazy";
   return img;
 }
 
-function createCoverPlaceholder() {
-  const div = document.createElement("div");
-  div.className = "cover-placeholder";
-  return div;
+function createTrackInfo(track) {
+  const info = document.createElement("div");
+  const title = document.createElement("h3");
+  const artists = document.createElement("p");
+  const album = document.createElement("p");
+  const duration = document.createElement("p");
+
+  title.textContent = track.name;
+  artists.textContent = track.artists;
+  album.textContent = track.album;
+  duration.textContent = `${formatDuration(track.durationMs)}${
+    track.explicit ? " / Explicit" : ""
+  }`;
+
+  info.append(title, artists, album, duration);
+  return info;
+}
+
+function createTrackActions(track) {
+  const actions = document.createElement("div");
+  const button = document.createElement("button");
+
+  actions.className = "track-actions";
+  button.type = "button";
+  button.textContent = "リクエストする";
+  button.addEventListener("click", () => openRequestDialog(track));
+
+  actions.append(button);
+  return actions;
+}
+
+function openRequestDialog(track) {
+  selectedTrack = track;
+  elements.selectedTrackText.textContent = `${track.name} / ${track.artists}`;
+  elements.mentorPasswordInput.value = "";
+
+  if (typeof elements.mentorDialog.showModal === "function") {
+    elements.mentorDialog.showModal();
+  } else {
+    elements.mentorDialog.setAttribute("open", "");
+  }
+
+  elements.mentorPasswordInput.focus();
+}
+
+function closeRequestDialog() {
+  selectedTrack = null;
+  elements.mentorPasswordInput.value = "";
+
+  if (typeof elements.mentorDialog.close === "function") {
+    elements.mentorDialog.close();
+  } else {
+    elements.mentorDialog.removeAttribute("open");
+  }
 }
 
 function formatDuration(ms) {
@@ -171,11 +189,16 @@ function formatDuration(ms) {
   return `${minutes}:${seconds}`;
 }
 
+function setStatus(message) {
+  elements.status.textContent = message;
+}
+
 function setSearchLoading(isLoading) {
-  searchInput.disabled = isLoading;
-  searchForm.querySelector("button").disabled = isLoading;
+  elements.searchInput.disabled = isLoading;
+  elements.searchForm.querySelector("button").disabled = isLoading;
 }
 
 function setRequestLoading(isLoading) {
-  requestForm.querySelector('button[type="submit"]').disabled = isLoading;
+  elements.requestForm.querySelector('button[type="submit"]').disabled =
+    isLoading;
 }
