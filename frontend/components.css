@@ -1,6 +1,6 @@
 .search-form {
   position: absolute;
-  top: 79px;
+  top: 66px;
   left: 0;
   display: grid;
   grid-template-columns: 1fr 64px;
@@ -10,9 +10,7 @@
   border: 0;
   border-radius: 24px;
   background: var(--cream);
-  box-shadow:
-    0 10px 18px rgba(122, 74, 18, 0.13),
-    inset 0 1px 0 rgba(255, 255, 255, 0.78);
+  box-shadow: var(--lift-shadow);
 }
 
 .search-form input,
@@ -66,9 +64,7 @@
   border: 0;
   border-radius: 22px;
   background: var(--surface);
-  box-shadow:
-    0 10px 18px rgba(122, 74, 18, 0.13),
-    inset 0 1px 0 rgba(255, 255, 255, 0.72);
+  box-shadow: var(--lift-shadow);
 }
 
 .track-cover,
@@ -78,7 +74,7 @@
   flex: 0 0 auto;
   border-radius: 12px;
   background: #ff613d;
-  box-shadow: 0 12px 22px rgba(122, 74, 18, 0.16);
+  box-shadow: 0 13px 24px rgba(122, 74, 18, 0.17);
 }
 
 .track-cover {
@@ -152,7 +148,7 @@
   border: 0;
   border-radius: 10px;
   background: #fff8e8;
-  box-shadow: 0 5px 6px rgba(122, 74, 18, 0.12);
+  box-shadow: 0 7px 12px rgba(122, 74, 18, 0.14);
 }
 
 .add-button::before,
@@ -201,7 +197,9 @@
   border: 0;
   border-radius: 38px 38px 0 0;
   background: var(--cream);
-  box-shadow: 0 -12px 28px rgba(122, 74, 18, 0.15);
+  box-shadow:
+    0 -12px 24px rgba(122, 74, 18, 0.13),
+    0 -2px 6px rgba(255, 238, 182, 0.22);
   color: #222222;
   font-size: 18px;
   font-weight: 800;
@@ -256,6 +254,7 @@
   right: 40px;
   bottom: clamp(88px, 19%, 122px);
   left: 40px;
+  z-index: 2;
   display: grid;
   grid-template-columns: 1fr 65px;
   height: 48px;
@@ -263,9 +262,7 @@
   border: 0;
   border-radius: 20px;
   background: var(--surface);
-  box-shadow:
-    0 12px 22px rgba(122, 74, 18, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  box-shadow: var(--lift-shadow);
 }
 
 .password-form input {

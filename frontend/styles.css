@@ -11,8 +11,12 @@
   --muted: #666666;
   --accent: #ffa823;
   --shadow: rgba(122, 74, 18, 0.14);
-  --panel-shadow: 0 -14px 30px rgba(122, 74, 18, 0.14);
-  --lift-shadow: 0 10px 18px rgba(122, 74, 18, 0.13);
+  --panel-shadow:
+    0 -18px 34px rgba(122, 74, 18, 0.16),
+    0 -4px 10px rgba(255, 238, 182, 0.22);
+  --lift-shadow:
+    0 12px 22px rgba(122, 74, 18, 0.14),
+    0 2px 5px rgba(122, 74, 18, 0.08);
   font-family:
     "Noto Sans JP",
     system-ui,
@@ -102,10 +106,10 @@ input:disabled {
 
 .app-header {
   position: absolute;
-  top: calc(50% - 88.5px);
+  top: calc(50% - 78px);
   left: 50%;
   width: min(320px, calc(100% - 48px));
-  height: 177px;
+  height: 156px;
   transform: translateX(-50%);
   transition: top 180ms ease;
   z-index: 4;
@@ -113,7 +117,7 @@ input:disabled {
 
 .phone[data-view="results"] .app-header,
 .phone[data-view="password"] .app-header {
-  top: 32px;
+  top: 34px;
 }
 
 .app-header h1 {
@@ -129,20 +133,9 @@ input:disabled {
   white-space: nowrap;
 }
 
-.app-header h1::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  bottom: 3px;
-  width: 198px;
-  height: 5px;
-  border-radius: 999px;
-  background: rgba(255, 243, 204, 0.82);
-}
-
 .subtitle {
   position: absolute;
-  top: 151px;
+  top: 124px;
   right: 0;
   width: 100%;
   margin: 0;
@@ -155,7 +148,7 @@ input:disabled {
 
 .status {
   position: absolute;
-  top: 184px;
+  top: 150px;
   right: 0;
   width: 100%;
   min-height: 18px;
@@ -168,20 +161,10 @@ input:disabled {
   text-shadow: 0 2px 4px rgba(122, 61, 8, 0.16);
 }
 
-.phone[data-view="results"] .subtitle,
-.phone[data-view="password"] .subtitle {
-  top: 142px;
-}
-
-.phone[data-view="results"] .status,
-.phone[data-view="password"] .status {
-  top: 168px;
-}
-
 .intro-note {
   position: absolute;
   left: 50%;
-  bottom: 114px;
+  bottom: 88px;
   margin: 0;
   color: var(--brown);
   font-size: 13px;
@@ -197,14 +180,33 @@ input:disabled {
 
 .results-panel {
   position: absolute;
-  top: 233px;
+  top: 216px;
   right: 0;
   bottom: 0;
   left: 0;
-  overflow: hidden;
+  overflow: visible;
   border-radius: 44px 44px 0 0;
-  background: rgba(255, 212, 124, 0.46);
+  background: transparent;
+}
+
+.results-panel::before,
+.password-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
   box-shadow: var(--panel-shadow);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.results-panel::before {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 218, 134, 0.5) 0%,
+    rgba(255, 212, 124, 0.4) 42%,
+    rgba(255, 197, 91, 0.36) 100%
+  );
 }
 
 .results-list {
@@ -213,7 +215,7 @@ input:disabled {
   right: 40px;
   bottom: 96px;
   left: 40px;
-  z-index: 1;
+  z-index: 2;
   display: grid;
   align-content: start;
   gap: 16px;
@@ -232,10 +234,54 @@ input:disabled {
   right: 0;
   bottom: 0;
   left: 0;
-  overflow: hidden;
+  overflow: visible;
   border-radius: 44px 44px 0 0;
-  background: rgba(255, 253, 246, 0.96);
+  background: transparent;
+  z-index: 2;
+}
+
+.phone[data-view="results"] .ui-layer::before,
+.phone[data-view="password"] .ui-layer::before {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 112px;
+  background: var(--cream);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.phone[data-view="password"] .ui-layer::before {
+  background: #fffdf6;
+}
+
+.phone[data-view="password"] .ui-layer::after {
+  content: "";
+  position: absolute;
+  top: 216px;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  border-radius: 44px 44px 0 0;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 218, 134, 0.5) 0%,
+    rgba(255, 212, 124, 0.4) 42%,
+    rgba(255, 197, 91, 0.36) 100%
+  );
   box-shadow: var(--panel-shadow);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.password-panel::before {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 254, 249, 0.98) 0%,
+    rgba(255, 252, 242, 0.96) 100%
+  );
 }
 
 .selected-song {
@@ -243,6 +289,7 @@ input:disabled {
   top: clamp(82px, 19%, 120px);
   right: 41px;
   left: 41px;
+  z-index: 1;
   display: grid;
   justify-items: center;
   text-align: center;
@@ -250,7 +297,19 @@ input:disabled {
 
 @media (max-height: 760px) {
   .status {
-    top: 160px;
+    top: 146px;
+  }
+
+  .results-panel {
+    top: 204px;
+  }
+
+  .phone[data-view="password"] .ui-layer::after {
+    top: 204px;
+  }
+
+  .password-panel {
+    top: 248px;
   }
 
   .results-list {
@@ -260,12 +319,12 @@ input:disabled {
 
   .phone[data-view="results"] .subtitle,
   .phone[data-view="password"] .subtitle {
-    top: 136px;
+    top: 124px;
   }
 
   .phone[data-view="results"] .status,
   .phone[data-view="password"] .status {
-    top: 158px;
+    top: 146px;
   }
 
   .selected-song {
