@@ -51,7 +51,7 @@
 .search-icon {
   width: 18px;
   height: 18px;
-  background: url("/assets/search.svg") center / contain no-repeat;
+  background: url("../assets/search.svg") center / contain no-repeat;
 }
 
 .track {
@@ -291,7 +291,7 @@
   top: 24px;
   width: 18px;
   height: 23px;
-  background: url("/assets/lock.svg") center / contain no-repeat;
+  background: url("../assets/lock.svg") center / contain no-repeat;
   transform: translate(-50%, -50%);
 }
 

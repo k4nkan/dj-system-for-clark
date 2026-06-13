@@ -32,8 +32,8 @@ logs:
 
 check:
 	node --check backend/server.js
-	node --check frontend/app.js
-	node --check frontend/decor.js
+	node --check frontend/scripts/app.js
+	node --check frontend/scripts/decor.js
 
 help:
 	@printf "Commands:\n"
