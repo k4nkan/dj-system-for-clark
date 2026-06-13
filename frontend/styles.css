@@ -11,6 +11,8 @@
   --muted: #666666;
   --accent: #ffa823;
   --shadow: rgba(122, 74, 18, 0.14);
+  --panel-shadow: 0 -14px 30px rgba(122, 74, 18, 0.14);
+  --lift-shadow: 0 10px 18px rgba(122, 74, 18, 0.13);
   font-family:
     "Noto Sans JP",
     system-ui,
@@ -166,6 +168,16 @@ input:disabled {
   text-shadow: 0 2px 4px rgba(122, 61, 8, 0.16);
 }
 
+.phone[data-view="results"] .subtitle,
+.phone[data-view="password"] .subtitle {
+  top: 142px;
+}
+
+.phone[data-view="results"] .status,
+.phone[data-view="password"] .status {
+  top: 168px;
+}
+
 .intro-note {
   position: absolute;
   left: 50%;
@@ -192,7 +204,7 @@ input:disabled {
   overflow: hidden;
   border-radius: 44px 44px 0 0;
   background: rgba(255, 212, 124, 0.46);
-  box-shadow: 0 -8px 24px rgba(122, 74, 18, 0.13);
+  box-shadow: var(--panel-shadow);
 }
 
 .results-list {
@@ -221,11 +233,9 @@ input:disabled {
   bottom: 0;
   left: 0;
   overflow: hidden;
-  border: 1px solid rgba(242, 222, 178, 0.45);
-  border-bottom: 0;
   border-radius: 44px 44px 0 0;
   background: rgba(255, 253, 246, 0.96);
-  box-shadow: 0 -8px 24px rgba(122, 74, 18, 0.13);
+  box-shadow: var(--panel-shadow);
 }
 
 .selected-song {
@@ -240,12 +250,26 @@ input:disabled {
 
 @media (max-height: 760px) {
   .status {
-    top: 176px;
+    top: 160px;
   }
 
   .results-list {
     top: 36px;
     bottom: 88px;
+  }
+
+  .phone[data-view="results"] .subtitle,
+  .phone[data-view="password"] .subtitle {
+    top: 136px;
+  }
+
+  .phone[data-view="results"] .status,
+  .phone[data-view="password"] .status {
+    top: 158px;
+  }
+
+  .selected-song {
+    top: 52px;
   }
 }
 
