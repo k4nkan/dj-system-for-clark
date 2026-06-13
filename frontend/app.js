@@ -1,20 +1,22 @@
 const elements = {
+  phone: document.querySelector("#phone"),
   searchForm: document.querySelector("#searchForm"),
   requestForm: document.querySelector("#requestForm"),
   searchInput: document.querySelector("#searchInput"),
   mentorPasswordInput: document.querySelector("#mentorPasswordInput"),
   status: document.querySelector("#status"),
   results: document.querySelector("#results"),
-  mentorDialog: document.querySelector("#mentorDialog"),
+  resultsPanel: document.querySelector("#resultsPanel"),
+  passwordPanel: document.querySelector("#passwordPanel"),
+  selectedCover: document.querySelector("#selectedCover"),
   selectedTrackText: document.querySelector("#selectedTrackText"),
-  cancelRequestButton: document.querySelector("#cancelRequestButton"),
+  selectedArtistText: document.querySelector("#selectedArtistText"),
 };
 
 let selectedTrack = null;
 
 elements.searchForm.addEventListener("submit", onSearchSubmit);
 elements.requestForm.addEventListener("submit", onRequestSubmit);
-elements.cancelRequestButton.addEventListener("click", closeRequestDialog);
 
 async function onSearchSubmit(event) {
   event.preventDefault();
@@ -25,6 +27,8 @@ async function onSearchSubmit(event) {
     return;
   }
 
+  selectedTrack = null;
+  setView("results");
   setSearchLoading(true);
   setStatus("Searching...");
   elements.results.innerHTML = "";
@@ -33,6 +37,7 @@ async function onSearchSubmit(event) {
     const data = await apiGet(`/api/search?q=${encodeURIComponent(query)}`);
     renderTracks(data.tracks || []);
   } catch (error) {
+    renderEmptyState(error.message);
     setStatus(error.message);
   } finally {
     setSearchLoading(false);
@@ -43,10 +48,13 @@ async function onRequestSubmit(event) {
   event.preventDefault();
 
   if (!selectedTrack) {
+    setStatus("Select a song first");
+    setView("results");
     return;
   }
 
   setRequestLoading(true);
+  setStatus("Adding...");
 
   try {
     await apiPost("/api/requests", {
@@ -55,7 +63,9 @@ async function onRequestSubmit(event) {
     });
 
     setStatus(`Added: ${selectedTrack.name}`);
-    closeRequestDialog();
+    elements.mentorPasswordInput.value = "";
+    selectedTrack = null;
+    setView("results");
   } catch (error) {
     setStatus(error.message);
   } finally {
@@ -90,103 +100,109 @@ function renderTracks(tracks) {
   elements.results.innerHTML = "";
 
   if (tracks.length === 0) {
-    setStatus("No results");
+    renderEmptyState("No songs found");
+    setStatus("No songs found");
     return;
   }
 
-  setStatus(`${tracks.length} results`);
+  setStatus(`${tracks.length} songs found`);
 
   for (const track of tracks) {
     elements.results.append(createTrackCard(track));
   }
 }
 
+function renderEmptyState(message) {
+  elements.results.innerHTML = "";
+
+  const empty = document.createElement("p");
+  empty.className = "empty-state";
+  empty.textContent = message;
+  elements.results.append(empty);
+}
+
 function createTrackCard(track) {
   const article = document.createElement("article");
   article.className = "track";
   article.append(
-    createCover(track),
+    createCover(track, "track-cover"),
     createTrackInfo(track),
-    createTrackActions(track),
+    createAddButton(track),
   );
   return article;
 }
 
-function createCover(track) {
+function createCover(track, className) {
+  const cover = document.createElement("div");
+  cover.className = className;
+
   if (!track.image) {
-    const placeholder = document.createElement("div");
-    placeholder.className = "cover-placeholder";
-    return placeholder;
+    cover.classList.add("cover-fallback");
+    return cover;
   }
 
   const img = document.createElement("img");
   img.src = track.image;
-  img.alt = `${track.album} cover`;
+  img.alt = track.album ? `${track.album} cover` : `${track.name} cover`;
   img.loading = "lazy";
-  return img;
+  cover.append(img);
+  return cover;
 }
 
 function createTrackInfo(track) {
   const info = document.createElement("div");
   const title = document.createElement("h3");
   const artists = document.createElement("p");
-  const album = document.createElement("p");
-  const duration = document.createElement("p");
 
+  info.className = "track-info";
   title.textContent = track.name;
   artists.textContent = track.artists;
-  album.textContent = track.album;
-  duration.textContent = `${formatDuration(track.durationMs)}${
-    track.explicit ? " / Explicit" : ""
-  }`;
 
-  info.append(title, artists, album, duration);
+  info.append(title, artists);
   return info;
 }
 
-function createTrackActions(track) {
-  const actions = document.createElement("div");
+function createAddButton(track) {
   const button = document.createElement("button");
-
-  actions.className = "track-actions";
+  button.className = "add-button";
   button.type = "button";
-  button.textContent = "Add";
-  button.addEventListener("click", () => openRequestDialog(track));
-
-  actions.append(button);
-  return actions;
+  button.setAttribute("aria-label", `Choose ${track.name}`);
+  button.addEventListener("click", () => openPasswordPanel(track));
+  return button;
 }
 
-function openRequestDialog(track) {
+function openPasswordPanel(track) {
   selectedTrack = track;
-  elements.selectedTrackText.textContent = `${track.name} / ${track.artists}`;
+  setStatus("");
+  renderSelectedTrack(track);
+  setView("password");
   elements.mentorPasswordInput.value = "";
-
-  if (typeof elements.mentorDialog.showModal === "function") {
-    elements.mentorDialog.showModal();
-  } else {
-    elements.mentorDialog.setAttribute("open", "");
-  }
-
   elements.mentorPasswordInput.focus();
 }
 
-function closeRequestDialog() {
-  selectedTrack = null;
-  elements.mentorPasswordInput.value = "";
+function renderSelectedTrack(track) {
+  elements.selectedCover.replaceChildren();
+  elements.selectedCover.className = "selected-cover";
 
-  if (typeof elements.mentorDialog.close === "function") {
-    elements.mentorDialog.close();
+  if (track.image) {
+    const img = document.createElement("img");
+    img.src = track.image;
+    img.alt = track.album ? `${track.album} cover` : `${track.name} cover`;
+    elements.selectedCover.append(img);
   } else {
-    elements.mentorDialog.removeAttribute("open");
+    elements.selectedCover.classList.add("cover-fallback");
   }
+
+  elements.selectedTrackText.textContent = track.name;
+  elements.selectedArtistText.textContent = track.artists;
 }
 
-function formatDuration(ms) {
-  const totalSeconds = Math.round(ms / 1000);
-  const minutes = Math.floor(totalSeconds / 60);
-  const seconds = String(totalSeconds % 60).padStart(2, "0");
-  return `${minutes}:${seconds}`;
+function setView(view) {
+  elements.phone.dataset.view = view;
+  elements.resultsPanel.hidden = view !== "results";
+  elements.passwordPanel.hidden = view !== "password";
+
+  window.dispatchEvent(new CustomEvent("dj:viewchange", { detail: { view } }));
 }
 
 function setStatus(message) {
@@ -199,6 +215,6 @@ function setSearchLoading(isLoading) {
 }
 
 function setRequestLoading(isLoading) {
-  elements.requestForm.querySelector('button[type="submit"]').disabled =
-    isLoading;
+  elements.mentorPasswordInput.disabled = isLoading;
+  elements.requestForm.querySelector("button").disabled = isLoading;
 }

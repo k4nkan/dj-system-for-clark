@@ -3,55 +3,70 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Spotify Search</title>
+    <title>DJ System</title>
     <link rel="stylesheet" href="/styles.css" />
+    <link rel="stylesheet" href="/components.css" />
   </head>
   <body>
-    <main class="app">
-      <section class="panel">
-        <h1>Spotify Search</h1>
-        <form id="searchForm" class="search-form">
-          <input
-            id="searchInput"
-            type="search"
-            name="q"
-            placeholder="Track or artist"
-            autocomplete="off"
-            required
-          />
-          <button type="submit">Search</button>
-        </form>
-        <p id="status" class="status"></p>
-        <div id="results" class="results"></div>
+    <main id="phone" class="phone" data-view="intro">
+      <div id="decorCanvas" class="decor-canvas" aria-hidden="true"></div>
+
+      <section class="ui-layer" aria-label="DJ System">
+        <header class="app-header">
+          <h1>DJ System</h1>
+          <form id="searchForm" class="search-form">
+            <label class="visually-hidden" for="searchInput">Search song</label>
+            <input
+              id="searchInput"
+              type="search"
+              name="q"
+              placeholder="Search..."
+              autocomplete="off"
+              required
+            />
+            <button class="search-button" type="submit" aria-label="Search">
+              <span class="search-icon" aria-hidden="true"></span>
+            </button>
+          </form>
+          <p class="subtitle">for Clark</p>
+          <p id="status" class="status" aria-live="polite"></p>
+        </header>
+
+        <p class="intro-note">@ Life is Tech!</p>
+
+        <section id="resultsPanel" class="results-panel" hidden>
+          <div id="results" class="results-list"></div>
+          <div class="choose-bar">Choose a Song !!</div>
+        </section>
+
+        <section id="passwordPanel" class="password-panel" hidden>
+          <div class="selected-song">
+            <div id="selectedCover" class="selected-cover"></div>
+            <h2 id="selectedTrackText">Song Title</h2>
+            <p id="selectedArtistText">Artist Name</p>
+          </div>
+
+          <form id="requestForm" class="password-form">
+            <label class="visually-hidden" for="mentorPasswordInput">
+              Password
+            </label>
+            <input
+              id="mentorPasswordInput"
+              type="password"
+              placeholder="Password in Here"
+              autocomplete="off"
+              required
+            />
+            <button class="lock-button" type="submit" aria-label="Add song">
+              <span class="lock-icon" aria-hidden="true"></span>
+            </button>
+          </form>
+        </section>
       </section>
     </main>
 
-    <dialog id="mentorDialog" class="dialog">
-      <form id="requestForm" method="dialog">
-        <h2>Confirm</h2>
-        <p id="selectedTrackText" class="dialog-track"></p>
-        <label class="field">
-          <span>Password</span>
-          <input
-            id="mentorPasswordInput"
-            type="password"
-            autocomplete="off"
-            required
-          />
-        </label>
-        <div class="dialog-actions">
-          <button
-            id="cancelRequestButton"
-            class="secondary-button"
-            type="button"
-          >
-            Cancel
-          </button>
-          <button type="submit">Add</button>
-        </div>
-      </form>
-    </dialog>
-
+    <script src="https://cdn.jsdelivr.net/npm/p5@1.9.4/lib/p5.min.js"></script>
+    <script src="/decor.js"></script>
     <script src="/app.js" type="module"></script>
   </body>
 </html>

@@ -3,14 +3,16 @@
 .PHONY: share setup down logs check help
 
 share: setup
-	@docker compose up --build -d
-	@printf "\nWaiting for tunnel URL...\n"
-	@for i in $$(seq 1 60); do \
-		url=$$(docker compose logs --no-color tunnel 2>/dev/null \
+	@started_at=$$(date -u +%Y-%m-%dT%H:%M:%SZ); \
+	docker compose up --build --force-recreate -d; \
+	printf "\nLocal: http://localhost:3000\n"; \
+	printf "\nWaiting for tunnel URL...\n"; \
+	for i in $$(seq 1 60); do \
+		url=$$(docker compose logs --no-color --since "$$started_at" tunnel 2>/dev/null \
 			| grep -Eo 'https://[^ ]+\.trycloudflare\.com' \
 			| tail -n 1); \
 		if [ -n "$$url" ]; then \
-			printf "\nURL: %s\n" "$$url"; \
+			printf "\nShare URL: %s\n" "$$url"; \
 			printf "Stop: make down\n"; \
 			exit 0; \
 		fi; \
@@ -31,6 +33,7 @@ logs:
 check:
 	node --check backend/server.js
 	node --check frontend/app.js
+	node --check frontend/decor.js
 
 help:
 	@printf "Commands:\n"
