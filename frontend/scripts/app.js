@@ -6,7 +6,7 @@ const elements = {
   mentorPasswordInput: document.querySelector("#mentorPasswordInput"),
   results: document.querySelector("#results"),
   resultsPanel: document.querySelector("#resultsPanel"),
-  chooseBar: document.querySelector(".choose-bar"),
+  chooseBarText: document.querySelector("#chooseBarText"),
   passwordPanel: document.querySelector("#passwordPanel"),
   selectedCover: document.querySelector("#selectedCover"),
   selectedTrackText: document.querySelector("#selectedTrackText"),
@@ -226,7 +226,7 @@ function setView(view) {
 }
 
 function setChooseBarText(message) {
-  elements.chooseBar.textContent = message;
+  elements.chooseBarText.textContent = message;
 }
 
 function releaseSearchInput() {

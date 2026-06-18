@@ -87,7 +87,8 @@ input:disabled {
 }
 
 .results-panel::before,
-.password-panel::before {
+.password-panel::before,
+.choose-bar::before {
   content: "";
   position: absolute;
   inset: 0;

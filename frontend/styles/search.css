@@ -67,13 +67,14 @@
     rgba(255, 212, 124, 0.38) 48%,
     rgba(255, 197, 91, 0.2) 100%
   );
+  box-shadow: none;
 }
 
 .results-list {
   position: absolute;
   top: 24px;
   right: 40px;
-  bottom: 96px;
+  bottom: 80px;
   left: 40px;
   z-index: 2;
   display: grid;
@@ -185,15 +186,27 @@
   display: grid;
   height: 80px;
   place-items: center;
-  border: 0;
-  border-top: 4px solid rgba(255, 168, 35, 0.72);
-  border-radius: 38px 38px 0 0;
-  background: var(--cream);
-  box-shadow: none;
+  border: none;
+  border-radius: 44px 44px 0 0;
+  background: transparent;
   color: #222222;
   font-size: 18px;
   font-weight: 800;
   line-height: 23px;
+}
+
+.choose-bar::before {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 254, 249, 0.98) 0%,
+    rgba(255, 252, 242, 0.96) 100%
+  );
+  box-shadow: none;
+}
+
+.choose-bar > span {
+  position: relative;
+  z-index: 1;
 }
 
 .phone[data-view="password"] .choose-bar {
@@ -207,7 +220,7 @@
 
   .results-list {
     top: 8px;
-    bottom: 88px;
+    bottom: 80px;
   }
 }
 
