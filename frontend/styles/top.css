@@ -1,0 +1,129 @@
+.phone {
+  position: relative;
+  width: min(var(--app-width), 100vw);
+  height: min(var(--app-height), 100svh);
+  overflow: hidden;
+  background: var(--orange);
+  box-shadow: 0 24px 48px rgba(122, 74, 18, 0.18);
+}
+
+.decor-canvas,
+.decor-canvas canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.decor-canvas {
+  z-index: 0;
+  pointer-events: none;
+}
+
+.ui-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.app-header {
+  position: absolute;
+  top: calc(50% - 78px);
+  left: 50%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: min(320px, calc(100% - 48px));
+  transform: translateX(-50%);
+  transition: top 180ms ease;
+  z-index: 4;
+}
+
+.phone[data-view="results"] .app-header,
+.phone[data-view="password"] .app-header {
+  top: 22px;
+}
+
+.app-header h1 {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  color: #ffffff;
+  font-size: 38px;
+  font-weight: 900;
+  line-height: 46px;
+  letter-spacing: 0;
+  text-shadow: 0 3px 6px rgba(122, 61, 8, 0.24);
+  white-space: nowrap;
+}
+
+.subtitle {
+  align-self: flex-end;
+  margin: 0;
+  color: #ffffff;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 26px;
+  text-align: right;
+}
+
+.intro-note {
+  position: absolute;
+  left: 50%;
+  bottom: 88px;
+  margin: 0;
+  color: var(--brown);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 17px;
+  transform: translateX(-50%);
+}
+
+.phone[data-view="results"] .intro-note,
+.phone[data-view="password"] .intro-note {
+  display: none;
+}
+
+.phone[data-view="results"] .ui-layer::before,
+.phone[data-view="password"] .ui-layer::before {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.phone[data-view="results"] .ui-layer::before {
+  display: none;
+}
+
+.phone[data-view="password"] .ui-layer::before {
+  height: 112px;
+  background: var(--cream);
+  z-index: 0;
+}
+
+@media (max-width: 360px) {
+  .app-header {
+    width: calc(100vw - 40px);
+  }
+}
+
+@media (max-width: 402px) {
+  :root {
+    background: var(--orange);
+  }
+
+  body {
+    background: var(--orange);
+  }
+
+  .phone {
+    width: 100vw;
+    height: 100dvh;
+    box-shadow: none;
+  }
+}

@@ -24,6 +24,9 @@ share: setup
 setup:
 	@test -f .env || cp .env.example .env
 
+reload:
+	docker compose up --build -d app
+
 down:
 	docker compose down
 

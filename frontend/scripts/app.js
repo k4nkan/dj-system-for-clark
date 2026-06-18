@@ -4,9 +4,9 @@ const elements = {
   requestForm: document.querySelector("#requestForm"),
   searchInput: document.querySelector("#searchInput"),
   mentorPasswordInput: document.querySelector("#mentorPasswordInput"),
-  status: document.querySelector("#status"),
   results: document.querySelector("#results"),
   resultsPanel: document.querySelector("#resultsPanel"),
+  chooseBar: document.querySelector(".choose-bar"),
   passwordPanel: document.querySelector("#passwordPanel"),
   selectedCover: document.querySelector("#selectedCover"),
   selectedTrackText: document.querySelector("#selectedTrackText"),
@@ -17,6 +17,9 @@ let selectedTrack = null;
 
 elements.searchForm.addEventListener("submit", onSearchSubmit);
 elements.requestForm.addEventListener("submit", onRequestSubmit);
+elements.searchInput.addEventListener("pointerdown", unlockSearchInput);
+elements.searchInput.addEventListener("touchstart", unlockSearchInput);
+elements.phone.addEventListener("pointerdown", onPhonePointerDown);
 
 async function onSearchSubmit(event) {
   event.preventDefault();
@@ -27,10 +30,11 @@ async function onSearchSubmit(event) {
     return;
   }
 
+  releaseSearchInput();
   selectedTrack = null;
   setView("results");
   setSearchLoading(true);
-  setStatus("Searching...");
+  setChooseBarText("Searching...");
   elements.results.innerHTML = "";
 
   try {
@@ -38,9 +42,10 @@ async function onSearchSubmit(event) {
     renderTracks(data.tracks || []);
   } catch (error) {
     renderEmptyState(error.message);
-    setStatus(error.message);
+    setChooseBarText(error.message);
   } finally {
     setSearchLoading(false);
+    releaseSearchInput();
   }
 }
 
@@ -48,13 +53,12 @@ async function onRequestSubmit(event) {
   event.preventDefault();
 
   if (!selectedTrack) {
-    setStatus("Select a song first");
+    setChooseBarText("Select a song first");
     setView("results");
     return;
   }
 
   setRequestLoading(true);
-  setStatus("Adding...");
 
   try {
     await apiPost("/api/requests", {
@@ -62,15 +66,33 @@ async function onRequestSubmit(event) {
       trackUri: selectedTrack.uri,
     });
 
-    setStatus(`Added: ${selectedTrack.name}`);
+    setChooseBarText("Added a Song!");
     elements.mentorPasswordInput.value = "";
     selectedTrack = null;
     setView("results");
   } catch (error) {
-    setStatus(error.message);
+    setChooseBarText(error.message);
+    setView("results");
   } finally {
     setRequestLoading(false);
   }
+}
+
+function onPhonePointerDown(event) {
+  if (elements.phone.dataset.view !== "password") {
+    return;
+  }
+
+  if (event.target.closest("#passwordPanel")) {
+    return;
+  }
+
+  if (!event.target.closest(".app-header, #resultsPanel")) {
+    return;
+  }
+
+  event.preventDefault();
+  setView("results");
 }
 
 async function apiGet(path) {
@@ -101,11 +123,11 @@ function renderTracks(tracks) {
 
   if (tracks.length === 0) {
     renderEmptyState("No songs found");
-    setStatus("No songs found");
+    setChooseBarText("No songs found");
     return;
   }
 
-  setStatus(`${tracks.length} songs found`);
+  setChooseBarText("Choose a Song !!");
 
   for (const track of tracks) {
     elements.results.append(createTrackCard(track));
@@ -173,11 +195,9 @@ function createAddButton(track) {
 
 function openPasswordPanel(track) {
   selectedTrack = track;
-  setStatus("");
   renderSelectedTrack(track);
   setView("password");
   elements.mentorPasswordInput.value = "";
-  elements.mentorPasswordInput.focus();
 }
 
 function renderSelectedTrack(track) {
@@ -199,18 +219,38 @@ function renderSelectedTrack(track) {
 
 function setView(view) {
   elements.phone.dataset.view = view;
-  elements.resultsPanel.hidden = view !== "results";
+  elements.resultsPanel.hidden = view !== "results" && view !== "password";
   elements.passwordPanel.hidden = view !== "password";
 
   window.dispatchEvent(new CustomEvent("dj:viewchange", { detail: { view } }));
 }
 
-function setStatus(message) {
-  elements.status.textContent = message;
+function setChooseBarText(message) {
+  elements.chooseBar.textContent = message;
+}
+
+function releaseSearchInput() {
+  elements.searchInput.readOnly = true;
+  clearSearchInputFocus();
+
+  requestAnimationFrame(() => {
+    clearSearchInputFocus();
+  });
+
+  setTimeout(clearSearchInputFocus, 80);
+  setTimeout(clearSearchInputFocus, 240);
+}
+
+function unlockSearchInput() {
+  elements.searchInput.readOnly = false;
+}
+
+function clearSearchInputFocus() {
+  elements.searchInput.blur();
+  window.getSelection()?.removeAllRanges();
 }
 
 function setSearchLoading(isLoading) {
-  elements.searchInput.disabled = isLoading;
   elements.searchForm.querySelector("button").disabled = isLoading;
 }
 
