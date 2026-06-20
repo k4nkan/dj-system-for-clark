@@ -24,6 +24,9 @@ share: setup
 setup:
 	@test -f .env || cp .env.example .env
 
+reload:
+	docker compose up --build -d app
+
 down:
 	docker compose down
 
@@ -32,8 +35,9 @@ logs:
 
 check:
 	node --check backend/server.js
-	node --check frontend/app.js
-	node --check frontend/decor.js
+	node --check frontend/scripts/app.js
+	node --check frontend/scripts/decor.js
+	node --check tools/spotify-refresh-token.js
 
 help:
 	@printf "Commands:\n"

@@ -9,8 +9,7 @@
     <meta name="theme-color" content="#f6a829" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <title>DJ System</title>
-    <link rel="stylesheet" href="/styles.css" />
-    <link rel="stylesheet" href="/components.css" />
+    <link rel="stylesheet" href="styles/main.css" />
   </head>
   <body>
     <main id="phone" class="phone" data-view="intro">
@@ -34,14 +33,15 @@
             </button>
           </form>
           <p class="subtitle">for Clark</p>
-          <p id="status" class="status" aria-live="polite"></p>
         </header>
 
         <p class="intro-note">&copy; Life is Tech!</p>
 
         <section id="resultsPanel" class="results-panel" hidden>
           <div id="results" class="results-list"></div>
-          <div class="choose-bar">Choose a Song !!</div>
+          <div class="choose-bar">
+            <span id="chooseBarText">Choose a Song !!</span>
+          </div>
         </section>
 
         <section id="passwordPanel" class="password-panel" hidden>
@@ -71,7 +71,7 @@
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/p5@1.9.4/lib/p5.min.js"></script>
-    <script src="/decor.js"></script>
-    <script src="/app.js" type="module"></script>
+    <script src="scripts/decor.js"></script>
+    <script src="scripts/app.js" type="module"></script>
   </body>
 </html>
