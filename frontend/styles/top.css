@@ -68,20 +68,35 @@
   text-align: right;
 }
 
-.intro-note {
+.intro-meta {
   position: absolute;
   left: 50%;
-  bottom: 88px;
+  bottom: 56px;
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+  margin: 0;
+  text-align: center;
+  transform: translateX(-50%);
+}
+
+.intro-note,
+.intro-credit,
+.intro-link {
   margin: 0;
   color: var(--brown);
   font-size: 13px;
   font-weight: 700;
   line-height: 17px;
-  transform: translateX(-50%);
 }
 
-.phone[data-view="results"] .intro-note,
-.phone[data-view="password"] .intro-note {
+.intro-link {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.phone[data-view="results"] .intro-meta,
+.phone[data-view="password"] .intro-meta {
   display: none;
 }
 
