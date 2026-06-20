@@ -37,6 +37,7 @@ check:
 	node --check backend/server.js
 	node --check frontend/scripts/app.js
 	node --check frontend/scripts/decor.js
+	node --check tools/spotify-refresh-token.js
 
 help:
 	@printf "Commands:\n"
