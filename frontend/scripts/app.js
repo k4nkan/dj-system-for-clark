@@ -15,6 +15,8 @@ const elements = {
 
 let selectedTrack = null;
 
+initializePanels();
+
 elements.searchForm.addEventListener("submit", onSearchSubmit);
 elements.requestForm.addEventListener("submit", onRequestSubmit);
 elements.searchInput.addEventListener("pointerdown", unlockSearchInput);
@@ -83,11 +85,7 @@ function onPhonePointerDown(event) {
     return;
   }
 
-  if (event.target.closest("#passwordPanel")) {
-    return;
-  }
-
-  if (!event.target.closest(".app-header, #resultsPanel")) {
+  if (event.target.closest("#requestForm")) {
     return;
   }
 
@@ -219,10 +217,26 @@ function renderSelectedTrack(track) {
 
 function setView(view) {
   elements.phone.dataset.view = view;
-  elements.resultsPanel.hidden = view !== "results" && view !== "password";
-  elements.passwordPanel.hidden = view !== "password";
+  setPanelAccessibility(view);
 
   window.dispatchEvent(new CustomEvent("dj:viewchange", { detail: { view } }));
+}
+
+function initializePanels() {
+  elements.resultsPanel.hidden = false;
+  elements.passwordPanel.hidden = false;
+  setPanelAccessibility(elements.phone.dataset.view || "intro");
+}
+
+function setPanelAccessibility(view) {
+  elements.resultsPanel.setAttribute(
+    "aria-hidden",
+    view === "intro" ? "true" : "false",
+  );
+  elements.passwordPanel.setAttribute(
+    "aria-hidden",
+    view === "password" ? "false" : "true",
+  );
 }
 
 function setChooseBarText(message) {
