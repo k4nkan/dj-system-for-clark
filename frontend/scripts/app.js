@@ -85,7 +85,7 @@ function onPhonePointerDown(event) {
     return;
   }
 
-  if (event.target.closest("#requestForm")) {
+  if (event.target.closest("#passwordPanel")) {
     return;
   }
 

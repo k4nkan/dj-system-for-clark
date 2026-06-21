@@ -50,33 +50,34 @@
 
         <section id="resultsPanel" class="results-panel" hidden>
           <div id="results" class="results-list"></div>
+
           <div class="choose-bar">
             <span id="chooseBarText">Choose a Song !!</span>
-          </div>
-        </section>
 
-        <section id="passwordPanel" class="password-panel" hidden>
-          <div class="selected-song">
-            <div id="selectedCover" class="selected-cover"></div>
-            <h2 id="selectedTrackText">Song Title</h2>
-            <p id="selectedArtistText">Artist Name</p>
-          </div>
+            <section id="passwordPanel" class="password-panel" hidden>
+              <div class="selected-song">
+                <div id="selectedCover" class="selected-cover"></div>
+                <h2 id="selectedTrackText">Song Title</h2>
+                <p id="selectedArtistText">Artist Name</p>
+              </div>
 
-          <form id="requestForm" class="password-form">
-            <label class="visually-hidden" for="mentorPasswordInput">
-              Password
-            </label>
-            <input
-              id="mentorPasswordInput"
-              type="password"
-              placeholder="Password in Here"
-              autocomplete="off"
-              required
-            />
-            <button class="lock-button" type="submit" aria-label="Add song">
-              <span class="lock-icon" aria-hidden="true"></span>
-            </button>
-          </form>
+              <form id="requestForm" class="password-form">
+                <label class="visually-hidden" for="mentorPasswordInput">
+                  Password
+                </label>
+                <input
+                  id="mentorPasswordInput"
+                  type="password"
+                  placeholder="Password in Here"
+                  autocomplete="off"
+                  required
+                />
+                <button class="lock-button" type="submit" aria-label="Add song">
+                  <span class="lock-icon" aria-hidden="true"></span>
+                </button>
+              </form>
+            </section>
+          </div>
         </section>
       </section>
     </main>
