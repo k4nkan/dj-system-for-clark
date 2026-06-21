@@ -2,6 +2,14 @@
 
 Search Spotify tracks and add them to a playlist after password confirmation.
 
+## Pages
+
+<p>
+  <img src="frontend/assets/view-1.webp" alt="View 1" width="220">
+  <img src="frontend/assets/view-2.webp" alt="View 2" width="220">
+  <img src="frontend/assets/view-3.webp" alt="View 3" width="220">
+</p>
+
 ## Setup
 
 ```sh
