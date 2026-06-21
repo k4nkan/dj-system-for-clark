@@ -3,9 +3,6 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "scripts": {
-    "spotify:token": "node tools/spotify-refresh-token.js"
-  },
   "engines": {
     "node": ">=18"
   }
