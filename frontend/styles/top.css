@@ -134,22 +134,6 @@
   display: none;
 }
 
-.phone[data-view="results"] .ui-layer::before,
-.phone[data-view="password"] .ui-layer::before {
-  content: "";
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  pointer-events: none;
-  z-index: 0;
-}
-
-.phone[data-view="results"] .ui-layer::before,
-.phone[data-view="password"] .ui-layer::before {
-  display: none;
-}
-
 @media (max-width: 360px) {
   .app-header {
     width: calc(100vw - 40px);

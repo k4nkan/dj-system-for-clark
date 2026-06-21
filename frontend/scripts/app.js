@@ -156,17 +156,29 @@ function createCover(track, className) {
   const cover = document.createElement("div");
   cover.className = className;
 
+  appendCoverImage(cover, track, { lazy: true });
+  return cover;
+}
+
+function appendCoverImage(cover, track, options = {}) {
   if (!track.image) {
     cover.classList.add("cover-fallback");
-    return cover;
+    return;
   }
 
   const img = document.createElement("img");
   img.src = track.image;
-  img.alt = track.album ? `${track.album} cover` : `${track.name} cover`;
-  img.loading = "lazy";
+  img.alt = getCoverAlt(track);
+
+  if (options.lazy) {
+    img.loading = "lazy";
+  }
+
   cover.append(img);
-  return cover;
+}
+
+function getCoverAlt(track) {
+  return track.album ? `${track.album} cover` : `${track.name} cover`;
 }
 
 function createTrackInfo(track) {
@@ -201,15 +213,7 @@ function openPasswordPanel(track) {
 function renderSelectedTrack(track) {
   elements.selectedCover.replaceChildren();
   elements.selectedCover.className = "selected-cover";
-
-  if (track.image) {
-    const img = document.createElement("img");
-    img.src = track.image;
-    img.alt = track.album ? `${track.album} cover` : `${track.name} cover`;
-    elements.selectedCover.append(img);
-  } else {
-    elements.selectedCover.classList.add("cover-fallback");
-  }
+  appendCoverImage(elements.selectedCover, track);
 
   elements.selectedTrackText.textContent = track.name;
   elements.selectedArtistText.textContent = track.artists;

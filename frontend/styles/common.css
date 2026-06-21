@@ -12,11 +12,9 @@
   --accent: #ffa823;
   --shadow: rgba(122, 74, 18, 0.14);
   --panel-shadow:
-    0 -12px 24px rgba(122, 74, 18, 0.08),
-    0 -3px 8px rgba(255, 238, 182, 0.14);
+    0 -12px 24px rgba(122, 74, 18, 0.08), 0 -3px 8px rgba(255, 238, 182, 0.14);
   --lift-shadow:
-    0 12px 22px rgba(122, 74, 18, 0.14),
-    0 2px 5px rgba(122, 74, 18, 0.08);
+    0 12px 22px rgba(122, 74, 18, 0.14), 0 2px 5px rgba(122, 74, 18, 0.08);
   font-family:
     "Noto Sans JP",
     system-ui,
@@ -87,7 +85,6 @@ input:disabled {
 }
 
 .results-panel::before,
-.password-panel::before,
 .choose-bar::before {
   content: "";
   position: absolute;

@@ -70,12 +70,8 @@
 .phone[data-view="results"] .results-panel,
 .phone[data-view="password"] .results-panel {
   opacity: 1;
-  transform: translateY(0);
-}
-
-.phone[data-view="results"] .results-panel,
-.phone[data-view="password"] .results-panel {
   pointer-events: auto;
+  transform: translateY(0);
 }
 
 .results-panel::before {
@@ -222,8 +218,7 @@
   isolation: isolate;
   line-height: 23px;
   overflow: hidden;
-  transition:
-    height 320ms ease-in-out;
+  transition: height 320ms ease-in-out;
 }
 
 .choose-bar::before {
