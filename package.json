@@ -5,5 +5,8 @@
   "type": "module",
   "engines": {
     "node": ">=18"
+  },
+  "dependencies": {
+    "qrcode": "^1.5.4"
   }
 }

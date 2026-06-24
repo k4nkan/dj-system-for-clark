@@ -1,6 +1,8 @@
 .DEFAULT_GOAL := share
 
-.PHONY: share setup down logs check help
+QR_IMAGE ?= tools/output/share-qr.png
+
+.PHONY: share setup qr down logs check help
 
 share: setup
 	@started_at=$$(date -u +%Y-%m-%dT%H:%M:%SZ); \
@@ -12,7 +14,9 @@ share: setup
 			| grep -Eo 'https://[^ ]+\.trycloudflare\.com' \
 			| tail -n 1); \
 		if [ -n "$$url" ]; then \
+			node tools/generate_qr_code.js "$$url" "$(QR_IMAGE)" >/dev/null || exit 1; \
 			printf "\nShare URL: %s\n" "$$url"; \
+			printf "QR image: %s\n" "$(QR_IMAGE)"; \
 			printf "Stop: make down\n"; \
 			exit 0; \
 		fi; \
@@ -23,6 +27,10 @@ share: setup
 
 setup:
 	@test -f .env || cp .env.example .env
+
+qr:
+	@test -n "$(URL)" || (printf "Usage: make qr URL=https://...trycloudflare.com\n" >&2; exit 1)
+	@node tools/generate_qr_code.js "$(URL)" "$(QR_IMAGE)"
 
 reload:
 	docker compose up --build -d app
@@ -37,10 +45,12 @@ check:
 	node --check backend/server.js
 	node --check frontend/scripts/app.js
 	node --check frontend/scripts/decor.js
+	node --check tools/generate_qr_code.js
 
 help:
 	@printf "Commands:\n"
 	@printf "  make / make share   start and print public URL\n"
+	@printf "  make qr URL=...     generate QR image from public URL\n"
 	@printf "  make down           stop containers\n"
 	@printf "  make logs           show tunnel logs\n"
 	@printf "  make check          syntax check\n"

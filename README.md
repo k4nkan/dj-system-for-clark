@@ -39,7 +39,14 @@ playlist-modify-private
 make
 ```
 
-Send the printed `https://...trycloudflare.com` URL.
+Send the printed `https://...trycloudflare.com` URL or
+`tools/output/share-qr.png`.
+
+`make` updates the QR image after the public URL is issued.
+
+```sh
+make qr URL=https://example.trycloudflare.com
+```
 
 ## Stop
 
@@ -58,6 +65,7 @@ make check
 ```txt
 frontend/      UI
 backend/       API
+tools/         Local utilities and generated share assets
 compose.yaml   Docker + Cloudflare Tunnel
 Makefile       Commands
 ```
