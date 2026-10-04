@@ -8,9 +8,11 @@ const elements = {
   systemStatus: document.querySelector("#systemStatus"),
   toggleSystemButton: document.querySelector("#toggleSystemButton"),
   settingsMessage: document.querySelector("#settingsMessage"),
-  passwordChangeForm: document.querySelector("#passwordChangeForm"),
-  currentPasswordInput: document.querySelector("#currentPasswordInput"),
-  newPasswordInput: document.querySelector("#newPasswordInput"),
+  requestPasswordChangeForm: document.querySelector(
+    "#requestPasswordChangeForm",
+  ),
+  requestPasswordStatus: document.querySelector("#requestPasswordStatus"),
+  newRequestPasswordInput: document.querySelector("#newRequestPasswordInput"),
   refreshButton: document.querySelector("#refreshButton"),
   nowPlaying: document.querySelector("#nowPlaying"),
   playlistHeader: document.querySelector("#playlistHeader"),
@@ -22,7 +24,10 @@ let refreshTimer = null;
 elements.loginForm.addEventListener("submit", login);
 elements.logoutButton.addEventListener("click", logout);
 elements.toggleSystemButton.addEventListener("click", toggleSystem);
-elements.passwordChangeForm.addEventListener("submit", changePassword);
+elements.requestPasswordChangeForm.addEventListener(
+  "submit",
+  changeRequestPassword,
+);
 elements.refreshButton.addEventListener("click", loadDashboard);
 
 loadDashboard();
@@ -92,14 +97,12 @@ async function toggleSystem() {
   await updateSettings({ enabled });
 }
 
-async function changePassword(event) {
+async function changeRequestPassword(event) {
   event.preventDefault();
   await updateSettings({
-    currentPassword: elements.currentPasswordInput.value,
-    newPassword: elements.newPasswordInput.value,
+    newRequestPassword: elements.newRequestPasswordInput.value,
   });
-  elements.currentPasswordInput.value = "";
-  elements.newPasswordInput.value = "";
+  elements.newRequestPasswordInput.value = "";
 }
 
 async function updateSettings(body) {
@@ -117,7 +120,8 @@ async function updateSettings(body) {
   } catch (error) {
     elements.settingsMessage.textContent = error.message;
   } finally {
-    elements.toggleSystemButton.disabled = elements.passwordChangeForm.hidden;
+    elements.toggleSystemButton.disabled =
+      elements.requestPasswordChangeForm.hidden;
   }
 }
 
@@ -130,10 +134,14 @@ function renderSettings(settings) {
     ? "Close Requests"
     : "Open Requests";
   elements.toggleSystemButton.disabled = !settings.storeConfigured;
-  elements.passwordChangeForm.hidden = !settings.storeConfigured;
+  elements.requestPasswordChangeForm.hidden = !settings.storeConfigured;
+  elements.requestPasswordStatus.textContent = `Current: ${
+    settings.requestPassword || "Not set"
+  }`;
 
   if (!settings.storeConfigured) {
-    elements.settingsMessage.textContent = "Connect Redis to enable settings";
+    elements.settingsMessage.textContent =
+      "Connect Private Blob to enable settings";
   }
 }
 

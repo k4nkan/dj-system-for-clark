@@ -4,8 +4,10 @@ import {
   getBody,
   sendApiError,
 } from "./_lib/http.js";
-import { verifyAdminPassword } from "./_lib/admin-auth.js";
-import { getSystemSettings } from "./_lib/settings.js";
+import {
+  requireRequestsOpen,
+  verifyRequestPassword,
+} from "./_lib/settings.js";
 import { addTrackToPlaylist } from "./_lib/spotify.js";
 
 export default async function handler(req, res) {
@@ -15,11 +17,9 @@ export default async function handler(req, res) {
     const body = getBody(req);
     const trackUri = String(body.trackUri || "").trim();
 
-    if (!(await getSystemSettings()).enabled) {
-      throw apiError(403, "Requests are closed");
-    }
+    const settings = await requireRequestsOpen();
 
-    if (!(await verifyAdminPassword(body.mentorPassword))) {
+    if (!verifyRequestPassword(body.requestPassword, settings)) {
       throw apiError(401, "Invalid password");
     }
 

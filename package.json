@@ -9,9 +9,12 @@
     "check": "node --check frontend/scripts/app.js && node --check frontend/scripts/admin.js && node --check frontend/scripts/decor.js && node --test && python3 -B -m py_compile tools/auth_server.py"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "devDependencies": {
     "vercel": "62.2.0"
+  },
+  "dependencies": {
+    "@vercel/blob": "^2.8.0"
   }
 }

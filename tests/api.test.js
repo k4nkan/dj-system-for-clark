@@ -6,32 +6,38 @@ import playlist from "../api/admin/playlist.js";
 import adminSettings from "../api/admin/settings.js";
 import requestTrack from "../api/requests.js";
 import search from "../api/search.js";
+import { settingsBlobClient } from "../api/_lib/settings.js";
 
 process.env.SPOTIFY_CLIENT_ID = "client";
 process.env.SPOTIFY_CLIENT_SECRET = "secret";
 process.env.SPOTIFY_REFRESH_TOKEN = "refresh";
 process.env.SPOTIFY_PLAYLIST_ID = "playlist";
-process.env.MENTOR_PASSWORD = "1234";
+process.env.REQUEST_PASSWORD = "1234";
+process.env.ADMIN_PASSWORD = "admin-password";
 process.env.ADMIN_SESSION_SECRET = "test-session-secret";
 
 test("Vercel API searches, adds, and protects playlist information", async () => {
   const calls = [];
-  let redisSettings = null;
+  let blobSettings = null;
+  settingsBlobClient.get = async (pathname, options) => {
+    assert.equal(pathname, "settings.json");
+    assert.deepEqual(options, { access: "private", useCache: false });
+    return blobSettings === null
+      ? null
+      : { stream: new Response(blobSettings).body };
+  };
+  settingsBlobClient.put = async (pathname, body, options) => {
+    assert.equal(pathname, "settings.json");
+    assert.deepEqual(options, {
+      access: "private",
+      allowOverwrite: true,
+      contentType: "application/json",
+    });
+    blobSettings = body;
+  };
+
   global.fetch = async (url, options = {}) => {
     calls.push({ url: String(url), options });
-
-    if (String(url) === "https://redis.example") {
-      const [command, , value] = JSON.parse(options.body);
-
-      if (command === "GET") {
-        return Response.json({ result: redisSettings });
-      }
-
-      if (command === "SET") {
-        redisSettings = value;
-        return Response.json({ result: "OK" });
-      }
-    }
 
     if (String(url).includes("/api/token")) {
       return Response.json({ access_token: "token", expires_in: 3600 });
@@ -73,7 +79,7 @@ test("Vercel API searches, adds, and protects playlist information", async () =>
   await requestTrack(
     {
       method: "POST",
-      body: { mentorPassword: "1234", trackUri: "spotify:track:track" },
+      body: { requestPassword: "1234", trackUri: "spotify:track:track" },
     },
     requestResponse,
   );
@@ -85,7 +91,10 @@ test("Vercel API searches, adds, and protects playlist information", async () =>
   assert.equal(unauthorizedResponse.statusCode, 401);
 
   const loginResponse = createResponse();
-  await login({ method: "POST", body: { password: "1234" } }, loginResponse);
+  await login(
+    { method: "POST", body: { password: "admin-password" } },
+    loginResponse,
+  );
   const cookie = loginResponse.headers["Set-Cookie"].split(";")[0];
 
   const playlistResponse = createResponse();
@@ -97,8 +106,7 @@ test("Vercel API searches, adds, and protects playlist information", async () =>
   assert.equal(playlistResponse.body.playlist.name, "Clark Playlist");
   assert.equal(playlistResponse.body.playlist.tracks[0].name, "Song");
 
-  process.env.UPSTASH_REDIS_REST_URL = "https://redis.example";
-  process.env.UPSTASH_REDIS_REST_TOKEN = "redis-token";
+  process.env.BLOB_READ_WRITE_TOKEN = "vercel_blob_rw_store_token";
 
   const closeResponse = createResponse();
   await adminSettings(
@@ -117,29 +125,56 @@ test("Vercel API searches, adds, and protects playlist information", async () =>
     {
       method: "PATCH",
       headers: { cookie },
-      body: { currentPassword: "1234", newPassword: "5678" },
+      body: { newRequestPassword: "abc123" },
     },
     passwordResponse,
   );
   assert.equal(passwordResponse.statusCode, 200);
-  assert.equal(passwordResponse.body.settings.hasCustomPassword, true);
+  assert.equal(passwordResponse.body.settings.requestPassword, "abc123");
+  assert.equal(JSON.parse(blobSettings).requestPassword, "abc123");
 
-  const oldPasswordResponse = createResponse();
-  await login(
-    { method: "POST", body: { password: "1234" } },
-    oldPasswordResponse,
+  const openResponse = createResponse();
+  await adminSettings(
+    { method: "PATCH", headers: { cookie }, body: { enabled: true } },
+    openResponse,
   );
-  assert.equal(oldPasswordResponse.statusCode, 401);
+  assert.equal(openResponse.statusCode, 200);
 
-  const newPasswordResponse = createResponse();
-  await login(
-    { method: "POST", body: { password: "5678" } },
-    newPasswordResponse,
+  const oldRequestPasswordResponse = createResponse();
+  await requestTrack(
+    {
+      method: "POST",
+      body: { requestPassword: "1234", trackUri: "spotify:track:track" },
+    },
+    oldRequestPasswordResponse,
   );
-  assert.equal(newPasswordResponse.statusCode, 200);
+  assert.equal(oldRequestPasswordResponse.statusCode, 401);
 
-  delete process.env.UPSTASH_REDIS_REST_URL;
-  delete process.env.UPSTASH_REDIS_REST_TOKEN;
+  const newRequestPasswordResponse = createResponse();
+  await requestTrack(
+    {
+      method: "POST",
+      body: { requestPassword: "abc123", trackUri: "spotify:track:track" },
+    },
+    newRequestPasswordResponse,
+  );
+  assert.equal(newRequestPasswordResponse.statusCode, 201);
+
+  const requestPasswordLoginResponse = createResponse();
+  await login(
+    { method: "POST", body: { password: "abc123" } },
+    requestPasswordLoginResponse,
+  );
+  assert.equal(requestPasswordLoginResponse.statusCode, 401);
+
+  const unchangedAdminLoginResponse = createResponse();
+  await login(
+    { method: "POST", body: { password: "admin-password" } },
+    unchangedAdminLoginResponse,
+  );
+  assert.equal(unchangedAdminLoginResponse.statusCode, 200);
+
+  delete process.env.BLOB_READ_WRITE_TOKEN;
 });
 
 function spotifyTrack() {

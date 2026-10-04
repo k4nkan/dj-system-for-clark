@@ -1,9 +1,9 @@
-import { requireAdmin, verifyAdminPassword } from "../_lib/admin-auth.js";
+import { requireAdmin } from "../_lib/admin-auth.js";
 import { apiError, getBody, sendApiError } from "../_lib/http.js";
 import {
+  getRequestPassword,
   getSystemSettings,
   isSettingsStoreConfigured,
-  setAdminPassword,
   updateSystemSettings,
 } from "../_lib/settings.js";
 
@@ -25,7 +25,7 @@ export default async function handler(req, res) {
     res.status(200).json({
       settings: {
         enabled: settings.enabled,
-        hasCustomPassword: Boolean(settings.passwordHash),
+        requestPassword: getRequestPassword(settings),
         storeConfigured: isSettingsStoreConfigured(),
       },
     });
@@ -35,21 +35,23 @@ export default async function handler(req, res) {
 }
 
 async function updateSettings(body) {
+  const updates = {};
+
   if (typeof body.enabled === "boolean") {
-    await updateSystemSettings({ enabled: body.enabled });
+    updates.enabled = body.enabled;
   }
 
-  if (body.newPassword !== undefined) {
-    const newPassword = String(body.newPassword || "");
+  if (body.newRequestPassword !== undefined) {
+    const requestPassword = String(body.newRequestPassword || "").trim();
 
-    if (!(await verifyAdminPassword(body.currentPassword))) {
-      throw apiError(401, "Current password is incorrect");
-    }
-
-    if (newPassword.length < 4) {
+    if (requestPassword.length < 4) {
       throw apiError(400, "New password must be at least 4 characters");
     }
 
-    await setAdminPassword(newPassword);
+    updates.requestPassword = requestPassword;
+  }
+
+  if (Object.keys(updates).length > 0) {
+    await updateSystemSettings(updates);
   }
 }
