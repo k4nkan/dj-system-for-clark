@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#f6a829" />
+    <title>DJ System Admin</title>
+    <link rel="stylesheet" href="styles/admin.css" />
+  </head>
+  <body>
+    <main class="admin-shell">
+      <header class="admin-header">
+        <div>
+          <h1>DJ System</h1>
+          <p>Admin</p>
+        </div>
+        <button id="logoutButton" class="text-button" type="button" hidden>
+          Logout
+        </button>
+      </header>
+
+      <section id="loginPanel" class="admin-card login-card">
+        <h2>Administrator Login</h2>
+        <form id="loginForm" class="login-form">
+          <label for="passwordInput">Approval PIN</label>
+          <input
+            id="passwordInput"
+            type="password"
+            inputmode="numeric"
+            autocomplete="one-time-code"
+            placeholder="PIN"
+            required
+          />
+          <button type="submit">Login</button>
+        </form>
+        <p id="loginMessage" class="message" role="status"></p>
+      </section>
+
+      <div id="dashboard" class="dashboard" hidden>
+        <section class="admin-card">
+          <div class="section-heading">
+            <h2>Now Playing</h2>
+            <button id="refreshButton" class="text-button" type="button">
+              Refresh
+            </button>
+          </div>
+          <div id="nowPlaying" class="now-playing"></div>
+        </section>
+
+        <section class="admin-card">
+          <div id="playlistHeader" class="playlist-header"></div>
+          <div id="playlistTracks" class="playlist-tracks"></div>
+        </section>
+      </div>
+    </main>
+
+    <script src="scripts/admin.js" type="module"></script>
+  </body>
+</html>

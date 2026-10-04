@@ -2,6 +2,9 @@
 
 Search Spotify tracks and add them to a playlist after password confirmation.
 
+The public UI keeps the existing confirmation flow. The authenticated admin page
+at `/admin` shows the current playback and up to 50 playlist items.
+
 ## Pages
 
 <p>
@@ -10,13 +13,13 @@ Search Spotify tracks and add them to a playlist after password confirmation.
   <img src="frontend/assets/view-3.webp" alt="View 3" width="220">
 </p>
 
-## Setup
+## Local Setup
 
 ```sh
-make setup
+npm install
 ```
 
-Set `.env`.
+Set `.env` for local development.
 
 ```env
 SPOTIFY_CLIENT_ID=...
@@ -24,7 +27,10 @@ SPOTIFY_CLIENT_SECRET=...
 SPOTIFY_REFRESH_TOKEN=...
 SPOTIFY_PLAYLIST_ID=...
 MENTOR_PASSWORD=...
+ADMIN_SESSION_SECRET=...
 ```
+
+`ADMIN_SESSION_SECRET` signs the admin session cookie. Use a long random value.
 
 `SPOTIFY_REFRESH_TOKEN` needs:
 
@@ -57,39 +63,52 @@ The script reads `SPOTIFY_CLIENT_ID` and `SPOTIFY_CLIENT_SECRET` from `.env`.
 Open `http://[::1]:5000/login`, authorize Spotify, and copy the returned
 refresh token to `.env`.
 
-## Share
+## Local Development
 
 ```sh
-make
+npm run local
 ```
 
-Send the printed `https://...trycloudflare.com` URL or
-`tools/output/share-qr.png`.
+This starts the static frontend and API Functions with values from `.env`
+without linking a Vercel project.
 
-`make` updates the QR image after the public URL is issued.
+To test with the Vercel Development environment variables instead, run:
 
 ```sh
-make qr URL=https://example.trycloudflare.com
+npm run link
+npx vercel pull
+npx vercel dev
 ```
 
-## Stop
+Open `http://localhost:3000/` for the public UI and
+`http://localhost:3000/admin` for the admin UI.
 
-```sh
-make down
+## Vercel
+
+Import this repository into Vercel and add the values from `.env.example` to the
+Production environment variables. Vercel serves the existing UI and the API
+Functions in `api/` without a persistent server or database.
+
+```txt
+/        public request UI
+/admin   authenticated playback and playlist view
 ```
+
+The configured Spotify playlist must be owned by, or collaborative with, the
+account that issued `SPOTIFY_REFRESH_TOKEN` for its items to be available.
 
 ## Check
 
 ```sh
-make check
+npm run check
 ```
 
 ## Files
 
 ```txt
 frontend/      UI
-backend/       API
-tools/         Local utilities and generated share assets
-compose.yaml   Docker + Cloudflare Tunnel
-Makefile       Commands
+api/           Vercel Functions
+tests/         API tests
+tools/         Spotify refresh token utility
+vercel.json    Vercel routes and Functions configuration
 ```
