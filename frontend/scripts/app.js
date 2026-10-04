@@ -3,7 +3,7 @@ const elements = {
   searchForm: document.querySelector("#searchForm"),
   requestForm: document.querySelector("#requestForm"),
   searchInput: document.querySelector("#searchInput"),
-  mentorPasswordInput: document.querySelector("#mentorPasswordInput"),
+  requestPasswordInput: document.querySelector("#requestPasswordInput"),
   results: document.querySelector("#results"),
   resultsPanel: document.querySelector("#resultsPanel"),
   chooseBarText: document.querySelector("#chooseBarText"),
@@ -16,12 +16,27 @@ const elements = {
 let selectedTrack = null;
 
 initializePanels();
+initializeSystemStatus();
 
 elements.searchForm.addEventListener("submit", onSearchSubmit);
 elements.requestForm.addEventListener("submit", onRequestSubmit);
 elements.searchInput.addEventListener("pointerdown", unlockSearchInput);
 elements.searchInput.addEventListener("touchstart", unlockSearchInput);
 elements.phone.addEventListener("pointerdown", onPhonePointerDown);
+
+async function initializeSystemStatus() {
+  try {
+    const data = await apiGet("/api/status");
+
+    if (!data.enabled) {
+      elements.searchInput.disabled = true;
+      elements.searchForm.querySelector("button").disabled = true;
+      elements.searchInput.placeholder = "Requests are closed";
+    }
+  } catch (error) {
+    console.error("Failed to load system status", error);
+  }
+}
 
 async function onSearchSubmit(event) {
   event.preventDefault();
@@ -64,12 +79,12 @@ async function onRequestSubmit(event) {
 
   try {
     await apiPost("/api/requests", {
-      mentorPassword: elements.mentorPasswordInput.value,
+      requestPassword: elements.requestPasswordInput.value,
       trackUri: selectedTrack.uri,
     });
 
     setChooseBarText("Added a Song!");
-    elements.mentorPasswordInput.value = "";
+    elements.requestPasswordInput.value = "";
     selectedTrack = null;
     setView("results");
   } catch (error) {
@@ -207,7 +222,7 @@ function openPasswordPanel(track) {
   selectedTrack = track;
   renderSelectedTrack(track);
   setView("password");
-  elements.mentorPasswordInput.value = "";
+  elements.requestPasswordInput.value = "";
 }
 
 function renderSelectedTrack(track) {
@@ -273,6 +288,6 @@ function setSearchLoading(isLoading) {
 }
 
 function setRequestLoading(isLoading) {
-  elements.mentorPasswordInput.disabled = isLoading;
+  elements.requestPasswordInput.disabled = isLoading;
   elements.requestForm.querySelector("button").disabled = isLoading;
 }

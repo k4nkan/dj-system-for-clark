@@ -5,6 +5,14 @@ const elements = {
   loginMessage: document.querySelector("#loginMessage"),
   dashboard: document.querySelector("#dashboard"),
   logoutButton: document.querySelector("#logoutButton"),
+  systemStatus: document.querySelector("#systemStatus"),
+  toggleSystemButton: document.querySelector("#toggleSystemButton"),
+  settingsMessage: document.querySelector("#settingsMessage"),
+  requestPasswordChangeForm: document.querySelector(
+    "#requestPasswordChangeForm",
+  ),
+  requestPasswordStatus: document.querySelector("#requestPasswordStatus"),
+  newRequestPasswordInput: document.querySelector("#newRequestPasswordInput"),
   refreshButton: document.querySelector("#refreshButton"),
   nowPlaying: document.querySelector("#nowPlaying"),
   playlistHeader: document.querySelector("#playlistHeader"),
@@ -15,6 +23,11 @@ let refreshTimer = null;
 
 elements.loginForm.addEventListener("submit", login);
 elements.logoutButton.addEventListener("click", logout);
+elements.toggleSystemButton.addEventListener("click", toggleSystem);
+elements.requestPasswordChangeForm.addEventListener(
+  "submit",
+  changeRequestPassword,
+);
 elements.refreshButton.addEventListener("click", loadDashboard);
 
 loadDashboard();
@@ -43,11 +56,12 @@ async function logout() {
 }
 
 async function loadDashboard() {
-  const [nowPlaying, playlist] = await Promise.allSettled([
+  const [settings, nowPlaying, playlist] = await Promise.allSettled([
+    apiRequest("/api/admin/settings"),
     apiRequest("/api/admin/now-playing"),
     apiRequest("/api/admin/playlist"),
   ]);
-  const authError = [nowPlaying, playlist].find(
+  const authError = [settings, nowPlaying, playlist].find(
     (result) => result.status === "rejected" && result.reason.status === 401,
   );
 
@@ -57,6 +71,12 @@ async function loadDashboard() {
   }
 
   showDashboard();
+
+  if (settings.status === "fulfilled") {
+    renderSettings(settings.value.settings);
+  } else {
+    elements.settingsMessage.textContent = settings.reason.message;
+  }
 
   if (nowPlaying.status === "fulfilled") {
     renderNowPlaying(nowPlaying.value.track);
@@ -69,6 +89,59 @@ async function loadDashboard() {
   } else {
     renderPanelError(elements.playlistHeader, playlist.reason.message);
     elements.playlistTracks.replaceChildren();
+  }
+}
+
+async function toggleSystem() {
+  const enabled = elements.toggleSystemButton.dataset.enabled !== "true";
+  await updateSettings({ enabled });
+}
+
+async function changeRequestPassword(event) {
+  event.preventDefault();
+  await updateSettings({
+    newRequestPassword: elements.newRequestPasswordInput.value,
+  });
+  elements.newRequestPasswordInput.value = "";
+}
+
+async function updateSettings(body) {
+  elements.settingsMessage.textContent = "Updating...";
+  elements.toggleSystemButton.disabled = true;
+
+  try {
+    const data = await apiRequest("/api/admin/settings", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    renderSettings(data.settings);
+    elements.settingsMessage.textContent = "Updated";
+  } catch (error) {
+    elements.settingsMessage.textContent = error.message;
+  } finally {
+    elements.toggleSystemButton.disabled =
+      elements.requestPasswordChangeForm.hidden;
+  }
+}
+
+function renderSettings(settings) {
+  elements.systemStatus.textContent = settings.enabled
+    ? "Requests are open"
+    : "Requests are closed";
+  elements.toggleSystemButton.dataset.enabled = String(settings.enabled);
+  elements.toggleSystemButton.textContent = settings.enabled
+    ? "Close Requests"
+    : "Open Requests";
+  elements.toggleSystemButton.disabled = !settings.storeConfigured;
+  elements.requestPasswordChangeForm.hidden = !settings.storeConfigured;
+  elements.requestPasswordStatus.textContent = `Current: ${
+    settings.requestPassword || "Not set"
+  }`;
+
+  if (!settings.storeConfigured) {
+    elements.settingsMessage.textContent =
+      "Connect Private Blob to enable settings";
   }
 }
 

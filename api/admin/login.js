@@ -9,11 +9,11 @@ import {
   verifyAdminPassword,
 } from "../_lib/admin-auth.js";
 
-export default function handler(req, res) {
+export default async function handler(req, res) {
   if (!allowMethod(req, res, "POST")) return;
 
   try {
-    if (!verifyAdminPassword(getBody(req).password)) {
+    if (!(await verifyAdminPassword(getBody(req).password))) {
       throw apiError(401, "Invalid password");
     }
 

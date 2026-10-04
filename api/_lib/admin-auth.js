@@ -1,23 +1,18 @@
-import { createHmac, timingSafeEqual } from "node:crypto";
+import { createHmac } from "node:crypto";
 import { apiError } from "./http.js";
+import { safeEqual } from "./safe-equal.js";
 
 const cookieName = "dj_admin";
 const sessionValue = "authenticated";
 
-export function verifyAdminPassword(password) {
-  const expected = process.env.MENTOR_PASSWORD;
+export async function verifyAdminPassword(password) {
+  const expected = process.env.ADMIN_PASSWORD;
 
   if (!expected) {
-    throw apiError(500, "MENTOR_PASSWORD is required");
+    throw apiError(500, "ADMIN_PASSWORD is required");
   }
 
-  const actualBuffer = Buffer.from(String(password || ""));
-  const expectedBuffer = Buffer.from(expected);
-
-  return (
-    actualBuffer.length === expectedBuffer.length &&
-    timingSafeEqual(actualBuffer, expectedBuffer)
-  );
+  return safeEqual(password, expected);
 }
 
 export function requireAdmin(req) {
@@ -27,15 +22,8 @@ export function requireAdmin(req) {
       .map((part) => part.trim().split("="))
       .filter(([name, value]) => name && value),
   );
-  const expected = sign(sessionValue);
-  const actual = String(cookies[cookieName] || "");
-  const actualBuffer = Buffer.from(actual);
-  const expectedBuffer = Buffer.from(expected);
 
-  if (
-    actualBuffer.length !== expectedBuffer.length ||
-    !timingSafeEqual(actualBuffer, expectedBuffer)
-  ) {
+  if (!safeEqual(cookies[cookieName], sign(sessionValue))) {
     throw apiError(401, "Authentication required");
   }
 }
@@ -55,10 +43,10 @@ export function clearAdminCookie(res) {
 }
 
 function sign(value) {
-  const secret = process.env.ADMIN_SESSION_SECRET || process.env.MENTOR_PASSWORD;
+  const secret = process.env.ADMIN_SESSION_SECRET || process.env.ADMIN_PASSWORD;
 
   if (!secret) {
-    throw apiError(500, "ADMIN_SESSION_SECRET or MENTOR_PASSWORD is required");
+    throw apiError(500, "ADMIN_SESSION_SECRET or ADMIN_PASSWORD is required");
   }
 
   return createHmac("sha256", secret).update(value).digest("hex");

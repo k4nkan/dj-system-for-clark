@@ -70,28 +70,60 @@ body {
   margin-top: 24px;
 }
 
+.password-change-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.password-change-form h3 {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--brown);
+  font-size: 15px;
+}
+
 .login-form label {
   color: var(--brown);
   font-weight: 800;
 }
 
 .login-form input,
-.login-form button {
+.login-form button,
+.password-change-form input,
+.password-change-form button,
+#toggleSystemButton {
   min-height: 48px;
   border: 0;
   border-radius: 16px;
 }
 
-.login-form input {
+.login-form input,
+.password-change-form input {
   padding: 0 16px;
   outline: 1px solid var(--surface-border);
   font-weight: 700;
 }
 
-.login-form button {
+.login-form button,
+.password-change-form button,
+#toggleSystemButton {
+  padding: 0 18px;
   background: var(--accent);
   color: #ffffff;
   font-weight: 900;
+}
+
+#toggleSystemButton[data-enabled="true"] {
+  background: #5c5c5c;
+}
+
+.system-status {
+  margin-top: 4px !important;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 700;
 }
 
 .text-button {
@@ -184,5 +216,13 @@ body {
 
   .admin-card {
     padding: 18px;
+  }
+
+  .password-change-form {
+    grid-template-columns: 1fr;
+  }
+
+  .password-change-form h3 {
+    grid-column: auto;
   }
 }

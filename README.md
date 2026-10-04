@@ -3,7 +3,8 @@
 Search Spotify tracks and add them to a playlist after password confirmation.
 
 The public UI keeps the existing confirmation flow. The authenticated admin page
-at `/admin` shows the current playback and up to 50 playlist items.
+at `/admin` controls requests and shows the current playback and up to 50
+playlist items.
 
 ## Pages
 
@@ -26,11 +27,18 @@ SPOTIFY_CLIENT_ID=...
 SPOTIFY_CLIENT_SECRET=...
 SPOTIFY_REFRESH_TOKEN=...
 SPOTIFY_PLAYLIST_ID=...
-MENTOR_PASSWORD=...
+REQUEST_PASSWORD=...
+ADMIN_PASSWORD=...
 ADMIN_SESSION_SECRET=...
+BLOB_READ_WRITE_TOKEN=...
 ```
 
-`ADMIN_SESSION_SECRET` signs the admin session cookie. Use a long random value.
+`ADMIN_PASSWORD` is used only for `/admin` login. `REQUEST_PASSWORD` is the
+initial password for adding tracks and may contain letters and numbers. After
+it is changed from `/admin`, the new password is stored in Private Blob and
+takes precedence over `REQUEST_PASSWORD`.
+`ADMIN_SESSION_SECRET` signs the admin session cookie; use a long random value.
+Without Blob, requests stay open and `REQUEST_PASSWORD` remains active.
 
 `SPOTIFY_REFRESH_TOKEN` needs:
 
@@ -87,7 +95,7 @@ Open `http://localhost:3000/` for the public UI and
 
 Import this repository into Vercel and add the values from `.env.example` to the
 Production environment variables. Vercel serves the existing UI and the API
-Functions in `api/` without a persistent server or database.
+Functions in `api/` without a persistent application server.
 
 ```txt
 /        public request UI
@@ -96,6 +104,15 @@ Functions in `api/` without a persistent server or database.
 
 The configured Spotify playlist must be owned by, or collaborative with, the
 account that issued `SPOTIFY_REFRESH_TOKEN` for its items to be available.
+
+Create a Private Blob store from the project's Storage tab and connect it to the
+project. Vercel adds `BLOB_READ_WRITE_TOKEN` automatically. Redeploy after
+connecting it. Request availability and the request password are saved as
+`settings.json` in the private store. `settings.example.json` documents its
+shape; the application creates the real blob on the first settings update.
+
+Connect separate Blob stores to Preview and Production if their settings should
+not be shared.
 
 ## Check
 
