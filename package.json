@@ -3,10 +3,15 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "scripts": {
+    "local": "vercel dev --local",
+    "link": "vercel link",
+    "check": "node --check frontend/scripts/app.js && node --check frontend/scripts/admin.js && node --check frontend/scripts/decor.js && node --test && python3 -B -m py_compile tools/auth_server.py"
+  },
   "engines": {
     "node": ">=18"
   },
-  "dependencies": {
-    "qrcode": "^1.5.4"
+  "devDependencies": {
+    "vercel": "62.2.0"
   }
 }

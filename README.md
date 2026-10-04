@@ -13,13 +13,13 @@ at `/admin` shows the current playback and up to 50 playlist items.
   <img src="frontend/assets/view-3.webp" alt="View 3" width="220">
 </p>
 
-## Setup
+## Local Setup
 
 ```sh
-make setup
+npm install
 ```
 
-Set `.env`.
+Set `.env` for local development.
 
 ```env
 SPOTIFY_CLIENT_ID=...
@@ -63,26 +63,25 @@ The script reads `SPOTIFY_CLIENT_ID` and `SPOTIFY_CLIENT_SECRET` from `.env`.
 Open `http://[::1]:5000/login`, authorize Spotify, and copy the returned
 refresh token to `.env`.
 
-## Share
+## Local Development
 
 ```sh
-make
+npm run local
 ```
 
-Send the printed `https://...trycloudflare.com` URL or
-`tools/output/share-qr.png`.
+This starts the static frontend and API Functions with values from `.env`
+without linking a Vercel project.
 
-`make` updates the QR image after the public URL is issued.
+To test with the Vercel Development environment variables instead, run:
 
 ```sh
-make qr URL=https://example.trycloudflare.com
+npm run link
+npx vercel pull
+npx vercel dev
 ```
 
-## Stop
-
-```sh
-make down
-```
+Open `http://localhost:3000/` for the public UI and
+`http://localhost:3000/admin` for the admin UI.
 
 ## Vercel
 
@@ -101,7 +100,7 @@ account that issued `SPOTIFY_REFRESH_TOKEN` for its items to be available.
 ## Check
 
 ```sh
-make check
+npm run check
 ```
 
 ## Files
@@ -109,9 +108,7 @@ make check
 ```txt
 frontend/      UI
 api/           Vercel Functions
-backend/       Local Docker API
 tests/         API tests
-tools/         Local utilities and generated share assets
-compose.yaml   Docker + Cloudflare Tunnel
-Makefile       Commands
+tools/         Spotify refresh token utility
+vercel.json    Vercel routes and Functions configuration
 ```
