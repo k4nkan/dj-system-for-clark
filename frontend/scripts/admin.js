@@ -30,6 +30,7 @@ async function login(event) {
       body: JSON.stringify({ password: elements.passwordInput.value }),
     });
     elements.passwordInput.value = "";
+    showDashboard();
     await loadDashboard();
   } catch (error) {
     elements.loginMessage.textContent = error.message;
@@ -42,22 +43,32 @@ async function logout() {
 }
 
 async function loadDashboard() {
-  try {
-    const [nowPlaying, playlist] = await Promise.all([
-      apiRequest("/api/admin/now-playing"),
-      apiRequest("/api/admin/playlist"),
-    ]);
+  const [nowPlaying, playlist] = await Promise.allSettled([
+    apiRequest("/api/admin/now-playing"),
+    apiRequest("/api/admin/playlist"),
+  ]);
+  const authError = [nowPlaying, playlist].find(
+    (result) => result.status === "rejected" && result.reason.status === 401,
+  );
 
-    showDashboard();
-    renderNowPlaying(nowPlaying.track);
-    renderPlaylist(playlist.playlist);
-  } catch (error) {
-    if (error.status === 401) {
-      showLogin();
-      return;
-    }
+  if (authError) {
+    showLogin();
+    return;
+  }
 
-    elements.nowPlaying.textContent = error.message;
+  showDashboard();
+
+  if (nowPlaying.status === "fulfilled") {
+    renderNowPlaying(nowPlaying.value.track);
+  } else {
+    renderPanelError(elements.nowPlaying, nowPlaying.reason.message);
+  }
+
+  if (playlist.status === "fulfilled") {
+    renderPlaylist(playlist.value.playlist);
+  } else {
+    renderPanelError(elements.playlistHeader, playlist.reason.message);
+    elements.playlistTracks.replaceChildren();
   }
 }
 
@@ -180,6 +191,10 @@ function createMessage(text) {
   message.className = "empty-message";
   message.textContent = text;
   return message;
+}
+
+function renderPanelError(element, message) {
+  element.replaceChildren(createMessage(message));
 }
 
 async function apiRequest(path, options) {
