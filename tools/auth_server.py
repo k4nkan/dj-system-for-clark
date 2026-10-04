@@ -2,6 +2,10 @@ from urllib.parse import urlencode
 import os
 from pathlib import Path
 
+import truststore
+
+truststore.inject_into_ssl()
+
 import requests
 from flask import Flask, redirect, request
 
