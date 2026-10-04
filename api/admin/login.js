@@ -13,7 +13,7 @@ export default async function handler(req, res) {
   if (!allowMethod(req, res, "POST")) return;
 
   try {
-    if (!(await verifyAdminPassword(getBody(req).password))) {
+    if (!verifyAdminPassword(getBody(req).password)) {
       throw apiError(401, "Invalid password");
     }
 

@@ -4,8 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "local": "vercel dev --local",
-    "link": "vercel link",
+    "local": "NODE_OPTIONS=--use-system-ca vercel dev --local",
+    "link": "NODE_OPTIONS=--use-system-ca vercel link",
     "check": "node --check frontend/scripts/app.js && node --check frontend/scripts/admin.js && node --check frontend/scripts/decor.js && node --test && python3 -B -m py_compile tools/auth_server.py"
   },
   "engines": {

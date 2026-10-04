@@ -14,9 +14,7 @@ body {
 }
 
 .admin-header,
-.section-heading,
-.playlist-summary,
-.admin-track {
+.section-heading {
   display: flex;
   align-items: center;
 }
@@ -72,14 +70,15 @@ body {
 
 .password-change-form {
   display: grid;
-  grid-template-columns: 1fr 1fr auto;
+  grid-template-columns: 1fr auto;
   gap: 10px;
   margin-top: 22px;
 }
 
-.password-change-form h3 {
+.password-change-form h3,
+.password-change-form .message {
   grid-column: 1 / -1;
-  margin: 0;
+  margin: 0 !important;
   color: var(--brown);
   font-size: 15px;
 }
@@ -135,78 +134,10 @@ body {
   text-underline-offset: 3px;
 }
 
-.admin-card .text-button {
-  color: var(--brown);
-}
-
-.message,
-.empty-message {
+.message {
   margin-top: 16px !important;
   color: var(--brown);
   font-weight: 700;
-}
-
-.now-playing,
-.playlist-header {
-  margin-top: 18px;
-}
-
-.playlist-summary,
-.admin-track {
-  gap: 14px;
-}
-
-.playlist-summary img,
-.admin-track img,
-.cover-placeholder {
-  flex: 0 0 auto;
-  width: 52px;
-  height: 52px;
-  border-radius: 10px;
-  background: #ffe0a8;
-  object-fit: cover;
-}
-
-.playlist-summary img {
-  width: 72px;
-  height: 72px;
-}
-
-.track-copy {
-  min-width: 0;
-}
-
-.track-copy strong,
-.track-copy span {
-  display: block;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.track-copy span {
-  margin-top: 4px;
-  color: var(--muted);
-  font-size: 13px;
-}
-
-.playlist-tracks {
-  display: grid;
-  gap: 10px;
-  margin-top: 20px;
-}
-
-.admin-track {
-  padding: 10px;
-  border-radius: 16px;
-  background: #fff8e8;
-  color: var(--ink);
-  text-decoration: none;
-}
-
-.spotify-link {
-  color: var(--brown);
-  font-weight: 800;
 }
 
 @media (max-width: 480px) {
@@ -222,7 +153,8 @@ body {
     grid-template-columns: 1fr;
   }
 
-  .password-change-form h3 {
+  .password-change-form h3,
+  .password-change-form .message {
     grid-column: auto;
   }
 }
