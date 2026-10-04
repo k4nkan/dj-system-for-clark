@@ -1,0 +1,17 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "fluid": true,
+  "rewrites": [
+    { "source": "/", "destination": "/frontend/index.html" },
+    { "source": "/admin", "destination": "/frontend/admin.html" },
+    { "source": "/assets/:path*", "destination": "/frontend/assets/:path*" },
+    { "source": "/scripts/:path*", "destination": "/frontend/scripts/:path*" },
+    { "source": "/styles/:path*", "destination": "/frontend/styles/:path*" }
+  ],
+  "headers": [
+    {
+      "source": "/admin",
+      "headers": [{ "key": "Cache-Control", "value": "no-store" }]
+    }
+  ]
+}

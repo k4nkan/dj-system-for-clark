@@ -1,0 +1,188 @@
+@import url("./common.css");
+
+body {
+  display: block;
+  overflow: auto;
+  background: var(--orange);
+}
+
+.admin-shell {
+  width: min(720px, 100%);
+  min-height: 100svh;
+  margin: 0 auto;
+  padding: 32px 20px 64px;
+}
+
+.admin-header,
+.section-heading,
+.playlist-summary,
+.admin-track {
+  display: flex;
+  align-items: center;
+}
+
+.admin-header,
+.section-heading {
+  justify-content: space-between;
+}
+
+.admin-header {
+  margin-bottom: 24px;
+  color: #ffffff;
+}
+
+.admin-header h1,
+.admin-header p,
+.admin-card h2,
+.admin-card p {
+  margin: 0;
+}
+
+.admin-header h1 {
+  font-size: 32px;
+  line-height: 38px;
+}
+
+.admin-header p {
+  font-weight: 700;
+}
+
+.admin-card {
+  padding: 22px;
+  border-radius: 24px;
+  background: var(--surface);
+  box-shadow: var(--lift-shadow);
+}
+
+.dashboard {
+  display: grid;
+  gap: 20px;
+}
+
+.login-card {
+  max-width: 420px;
+  margin: 80px auto 0;
+}
+
+.login-form {
+  display: grid;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.login-form label {
+  color: var(--brown);
+  font-weight: 800;
+}
+
+.login-form input,
+.login-form button {
+  min-height: 48px;
+  border: 0;
+  border-radius: 16px;
+}
+
+.login-form input {
+  padding: 0 16px;
+  outline: 1px solid var(--surface-border);
+  font-weight: 700;
+}
+
+.login-form button {
+  background: var(--accent);
+  color: #ffffff;
+  font-weight: 900;
+}
+
+.text-button {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.admin-card .text-button {
+  color: var(--brown);
+}
+
+.message,
+.empty-message {
+  margin-top: 16px !important;
+  color: var(--brown);
+  font-weight: 700;
+}
+
+.now-playing,
+.playlist-header {
+  margin-top: 18px;
+}
+
+.playlist-summary,
+.admin-track {
+  gap: 14px;
+}
+
+.playlist-summary img,
+.admin-track img,
+.cover-placeholder {
+  flex: 0 0 auto;
+  width: 52px;
+  height: 52px;
+  border-radius: 10px;
+  background: #ffe0a8;
+  object-fit: cover;
+}
+
+.playlist-summary img {
+  width: 72px;
+  height: 72px;
+}
+
+.track-copy {
+  min-width: 0;
+}
+
+.track-copy strong,
+.track-copy span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.track-copy span {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.playlist-tracks {
+  display: grid;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.admin-track {
+  padding: 10px;
+  border-radius: 16px;
+  background: #fff8e8;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.spotify-link {
+  color: var(--brown);
+  font-weight: 800;
+}
+
+@media (max-width: 480px) {
+  .admin-shell {
+    padding: 24px 16px 48px;
+  }
+
+  .admin-card {
+    padding: 18px;
+  }
+}

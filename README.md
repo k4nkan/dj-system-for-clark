@@ -2,6 +2,9 @@
 
 Search Spotify tracks and add them to a playlist after password confirmation.
 
+The public UI keeps the existing confirmation flow. The authenticated admin page
+at `/admin` shows the current playback and up to 50 playlist items.
+
 ## Pages
 
 <p>
@@ -24,7 +27,10 @@ SPOTIFY_CLIENT_SECRET=...
 SPOTIFY_REFRESH_TOKEN=...
 SPOTIFY_PLAYLIST_ID=...
 MENTOR_PASSWORD=...
+ADMIN_SESSION_SECRET=...
 ```
+
+`ADMIN_SESSION_SECRET` signs the admin session cookie. Use a long random value.
 
 `SPOTIFY_REFRESH_TOKEN` needs:
 
@@ -78,6 +84,20 @@ make qr URL=https://example.trycloudflare.com
 make down
 ```
 
+## Vercel
+
+Import this repository into Vercel and add the values from `.env.example` to the
+Production environment variables. Vercel serves the existing UI and the API
+Functions in `api/` without a persistent server or database.
+
+```txt
+/        public request UI
+/admin   authenticated playback and playlist view
+```
+
+The configured Spotify playlist must be owned by, or collaborative with, the
+account that issued `SPOTIFY_REFRESH_TOKEN` for its items to be available.
+
 ## Check
 
 ```sh
@@ -88,7 +108,9 @@ make check
 
 ```txt
 frontend/      UI
-backend/       API
+api/           Vercel Functions
+backend/       Local Docker API
+tests/         API tests
 tools/         Local utilities and generated share assets
 compose.yaml   Docker + Cloudflare Tunnel
 Makefile       Commands

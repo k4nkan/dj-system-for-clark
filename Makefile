@@ -44,8 +44,11 @@ logs:
 check:
 	node --check backend/server.js
 	node --check frontend/scripts/app.js
+	node --check frontend/scripts/admin.js
 	node --check frontend/scripts/decor.js
 	node --check tools/generate_qr_code.js
+	@for file in api/*.js api/admin/*.js api/_lib/*.js; do node --check "$$file" || exit 1; done
+	node --test
 	python3 -B -m py_compile tools/auth_server.py
 
 help:
