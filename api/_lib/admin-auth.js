@@ -5,7 +5,7 @@ import { safeEqual } from "./safe-equal.js";
 const cookieName = "dj_admin";
 const sessionValue = "authenticated";
 
-export async function verifyAdminPassword(password) {
+export function verifyAdminPassword(password) {
   const expected = process.env.ADMIN_PASSWORD;
 
   if (!expected) {

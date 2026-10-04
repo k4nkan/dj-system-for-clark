@@ -3,8 +3,9 @@
 Search Spotify tracks and add them to a playlist after password confirmation.
 
 The public UI keeps the existing confirmation flow. The authenticated admin page
-at `/admin` controls requests and shows the current playback and up to 50
-playlist items.
+at `/admin` opens or closes requests and changes the request password.
+`/api/admin/now-playing` and `/api/admin/playlist` return the current playback
+and up to 50 playlist items for admin sessions.
 
 ## Pages
 
@@ -80,12 +81,17 @@ npm run local
 This starts the static frontend and API Functions with values from `.env`
 without linking a Vercel project.
 
+The script runs Node with `--use-system-ca` so requests to Spotify and Blob
+trust certificates from the macOS keychain. This avoids
+`SELF_SIGNED_CERT_IN_CHAIN` on networks that inspect HTTPS traffic, and requires
+Node 22.15 or later.
+
 To test with the Vercel Development environment variables instead, run:
 
 ```sh
 npm run link
-npx vercel pull
-npx vercel dev
+NODE_OPTIONS=--use-system-ca npx vercel pull
+NODE_OPTIONS=--use-system-ca npx vercel dev
 ```
 
 Open `http://localhost:3000/` for the public UI and
@@ -99,7 +105,7 @@ Functions in `api/` without a persistent application server.
 
 ```txt
 /        public request UI
-/admin   authenticated playback and playlist view
+/admin   authenticated request settings
 ```
 
 The configured Spotify playlist must be owned by, or collaborative with, the

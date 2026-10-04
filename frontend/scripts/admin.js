@@ -13,13 +13,9 @@ const elements = {
   ),
   requestPasswordStatus: document.querySelector("#requestPasswordStatus"),
   newRequestPasswordInput: document.querySelector("#newRequestPasswordInput"),
-  refreshButton: document.querySelector("#refreshButton"),
-  nowPlaying: document.querySelector("#nowPlaying"),
-  playlistHeader: document.querySelector("#playlistHeader"),
-  playlistTracks: document.querySelector("#playlistTracks"),
 };
 
-let refreshTimer = null;
+let storeConfigured = false;
 
 elements.loginForm.addEventListener("submit", login);
 elements.logoutButton.addEventListener("click", logout);
@@ -28,7 +24,6 @@ elements.requestPasswordChangeForm.addEventListener(
   "submit",
   changeRequestPassword,
 );
-elements.refreshButton.addEventListener("click", loadDashboard);
 
 loadDashboard();
 
@@ -56,39 +51,18 @@ async function logout() {
 }
 
 async function loadDashboard() {
-  const [settings, nowPlaying, playlist] = await Promise.allSettled([
-    apiRequest("/api/admin/settings"),
-    apiRequest("/api/admin/now-playing"),
-    apiRequest("/api/admin/playlist"),
-  ]);
-  const authError = [settings, nowPlaying, playlist].find(
-    (result) => result.status === "rejected" && result.reason.status === 401,
-  );
+  try {
+    const data = await apiRequest("/api/admin/settings");
+    showDashboard();
+    renderSettings(data.settings);
+  } catch (error) {
+    if (error.status === 401) {
+      showLogin();
+      return;
+    }
 
-  if (authError) {
-    showLogin();
-    return;
-  }
-
-  showDashboard();
-
-  if (settings.status === "fulfilled") {
-    renderSettings(settings.value.settings);
-  } else {
-    elements.settingsMessage.textContent = settings.reason.message;
-  }
-
-  if (nowPlaying.status === "fulfilled") {
-    renderNowPlaying(nowPlaying.value.track);
-  } else {
-    renderPanelError(elements.nowPlaying, nowPlaying.reason.message);
-  }
-
-  if (playlist.status === "fulfilled") {
-    renderPlaylist(playlist.value.playlist);
-  } else {
-    renderPanelError(elements.playlistHeader, playlist.reason.message);
-    elements.playlistTracks.replaceChildren();
+    showDashboard();
+    elements.settingsMessage.textContent = error.message;
   }
 }
 
@@ -99,15 +73,18 @@ async function toggleSystem() {
 
 async function changeRequestPassword(event) {
   event.preventDefault();
-  await updateSettings({
+  const updated = await updateSettings({
     newRequestPassword: elements.newRequestPasswordInput.value,
   });
-  elements.newRequestPasswordInput.value = "";
+
+  if (updated) {
+    elements.newRequestPasswordInput.value = "";
+  }
 }
 
 async function updateSettings(body) {
   elements.settingsMessage.textContent = "Updating...";
-  elements.toggleSystemButton.disabled = true;
+  setSettingsDisabled(true);
 
   try {
     const data = await apiRequest("/api/admin/settings", {
@@ -117,15 +94,17 @@ async function updateSettings(body) {
     });
     renderSettings(data.settings);
     elements.settingsMessage.textContent = "Updated";
+    return true;
   } catch (error) {
     elements.settingsMessage.textContent = error.message;
+    return false;
   } finally {
-    elements.toggleSystemButton.disabled =
-      elements.requestPasswordChangeForm.hidden;
+    setSettingsDisabled(!storeConfigured);
   }
 }
 
 function renderSettings(settings) {
+  storeConfigured = settings.storeConfigured;
   elements.systemStatus.textContent = settings.enabled
     ? "Requests are open"
     : "Requests are closed";
@@ -133,21 +112,27 @@ function renderSettings(settings) {
   elements.toggleSystemButton.textContent = settings.enabled
     ? "Close Requests"
     : "Open Requests";
-  elements.toggleSystemButton.disabled = !settings.storeConfigured;
-  elements.requestPasswordChangeForm.hidden = !settings.storeConfigured;
+  elements.requestPasswordChangeForm.hidden = !storeConfigured;
+  setSettingsDisabled(!storeConfigured);
   elements.requestPasswordStatus.textContent = `Current: ${
     settings.requestPassword || "Not set"
   }`;
 
-  if (!settings.storeConfigured) {
+  if (!storeConfigured) {
     elements.settingsMessage.textContent =
       "Connect Private Blob to enable settings";
   }
 }
 
+function setSettingsDisabled(disabled) {
+  elements.toggleSystemButton.disabled = disabled;
+
+  for (const control of elements.requestPasswordChangeForm.elements) {
+    control.disabled = disabled;
+  }
+}
+
 function showLogin() {
-  clearInterval(refreshTimer);
-  refreshTimer = null;
   elements.loginPanel.hidden = false;
   elements.dashboard.hidden = true;
   elements.logoutButton.hidden = true;
@@ -158,116 +143,6 @@ function showDashboard() {
   elements.dashboard.hidden = false;
   elements.logoutButton.hidden = false;
   elements.loginMessage.textContent = "";
-
-  if (!refreshTimer) {
-    refreshTimer = setInterval(loadNowPlaying, 15000);
-  }
-}
-
-async function loadNowPlaying() {
-  try {
-    const data = await apiRequest("/api/admin/now-playing");
-    renderNowPlaying(data.track);
-  } catch (error) {
-    if (error.status === 401) showLogin();
-  }
-}
-
-function renderNowPlaying(track) {
-  elements.nowPlaying.replaceChildren();
-
-  if (!track) {
-    elements.nowPlaying.append(createMessage("Nothing is playing"));
-    return;
-  }
-
-  elements.nowPlaying.append(createTrack(track, track.isPlaying ? "Playing" : "Paused"));
-}
-
-function renderPlaylist(playlist) {
-  elements.playlistHeader.replaceChildren();
-  elements.playlistTracks.replaceChildren();
-
-  const summary = document.createElement("div");
-  const copy = document.createElement("div");
-  const title = document.createElement("h2");
-  const count = document.createElement("p");
-
-  summary.className = "playlist-summary";
-  copy.className = "track-copy";
-  title.textContent = playlist.name;
-  count.textContent = `${playlist.total} songs`;
-  appendCover(summary, playlist.image, playlist.name);
-  copy.append(title, count);
-  summary.append(copy);
-  elements.playlistHeader.append(summary);
-
-  if (playlist.spotifyUrl) {
-    const link = document.createElement("a");
-    link.className = "spotify-link";
-    link.href = playlist.spotifyUrl;
-    link.target = "_blank";
-    link.rel = "noreferrer";
-    link.textContent = "Open in Spotify";
-    elements.playlistHeader.append(link);
-  }
-
-  if (playlist.tracks.length === 0) {
-    elements.playlistTracks.append(createMessage("No songs in this playlist"));
-    return;
-  }
-
-  for (const track of playlist.tracks) {
-    elements.playlistTracks.append(createTrack(track));
-  }
-}
-
-function createTrack(track, state = "") {
-  const row = document.createElement(track.spotifyUrl ? "a" : "div");
-  const copy = document.createElement("div");
-  const title = document.createElement("strong");
-  const detail = document.createElement("span");
-
-  row.className = "admin-track";
-  copy.className = "track-copy";
-  title.textContent = track.name;
-  detail.textContent = [track.artists, state].filter(Boolean).join(" · ");
-  appendCover(row, track.image, track.album || track.name);
-  copy.append(title, detail);
-  row.append(copy);
-
-  if (track.spotifyUrl) {
-    row.href = track.spotifyUrl;
-    row.target = "_blank";
-    row.rel = "noreferrer";
-  }
-
-  return row;
-}
-
-function appendCover(parent, image, alt) {
-  if (!image) {
-    const placeholder = document.createElement("div");
-    placeholder.className = "cover-placeholder";
-    parent.append(placeholder);
-    return;
-  }
-
-  const img = document.createElement("img");
-  img.src = image;
-  img.alt = `${alt} cover`;
-  parent.append(img);
-}
-
-function createMessage(text) {
-  const message = document.createElement("p");
-  message.className = "empty-message";
-  message.textContent = text;
-  return message;
-}
-
-function renderPanelError(element, message) {
-  element.replaceChildren(createMessage(message));
 }
 
 async function apiRequest(path, options) {

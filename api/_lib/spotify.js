@@ -20,12 +20,7 @@ export async function searchTracks(query) {
 }
 
 export async function addTrackToPlaylist(trackUri) {
-  requireEnv([
-    "SPOTIFY_CLIENT_ID",
-    "SPOTIFY_CLIENT_SECRET",
-    "SPOTIFY_REFRESH_TOKEN",
-    "SPOTIFY_PLAYLIST_ID",
-  ]);
+  requireUserEnv();
 
   const url = `${spotifyApiBase}/playlists/${process.env.SPOTIFY_PLAYLIST_ID}/items`;
   await spotifyJson(url, await getUserAccessToken(), {
