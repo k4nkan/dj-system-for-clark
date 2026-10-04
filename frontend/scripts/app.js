@@ -16,12 +16,27 @@ const elements = {
 let selectedTrack = null;
 
 initializePanels();
+initializeSystemStatus();
 
 elements.searchForm.addEventListener("submit", onSearchSubmit);
 elements.requestForm.addEventListener("submit", onRequestSubmit);
 elements.searchInput.addEventListener("pointerdown", unlockSearchInput);
 elements.searchInput.addEventListener("touchstart", unlockSearchInput);
 elements.phone.addEventListener("pointerdown", onPhonePointerDown);
+
+async function initializeSystemStatus() {
+  try {
+    const data = await apiGet("/api/status");
+
+    if (!data.enabled) {
+      elements.searchInput.disabled = true;
+      elements.searchForm.querySelector("button").disabled = true;
+      elements.searchInput.placeholder = "Requests are closed";
+    }
+  } catch (error) {
+    console.error("Failed to load system status", error);
+  }
+}
 
 async function onSearchSubmit(event) {
   event.preventDefault();

@@ -3,6 +3,7 @@ import test from "node:test";
 
 import login from "../api/admin/login.js";
 import playlist from "../api/admin/playlist.js";
+import adminSettings from "../api/admin/settings.js";
 import requestTrack from "../api/requests.js";
 import search from "../api/search.js";
 
@@ -15,8 +16,22 @@ process.env.ADMIN_SESSION_SECRET = "test-session-secret";
 
 test("Vercel API searches, adds, and protects playlist information", async () => {
   const calls = [];
+  let redisSettings = null;
   global.fetch = async (url, options = {}) => {
     calls.push({ url: String(url), options });
+
+    if (String(url) === "https://redis.example") {
+      const [command, , value] = JSON.parse(options.body);
+
+      if (command === "GET") {
+        return Response.json({ result: redisSettings });
+      }
+
+      if (command === "SET") {
+        redisSettings = value;
+        return Response.json({ result: "OK" });
+      }
+    }
 
     if (String(url).includes("/api/token")) {
       return Response.json({ access_token: "token", expires_in: 3600 });
@@ -70,7 +85,7 @@ test("Vercel API searches, adds, and protects playlist information", async () =>
   assert.equal(unauthorizedResponse.statusCode, 401);
 
   const loginResponse = createResponse();
-  login({ method: "POST", body: { password: "1234" } }, loginResponse);
+  await login({ method: "POST", body: { password: "1234" } }, loginResponse);
   const cookie = loginResponse.headers["Set-Cookie"].split(";")[0];
 
   const playlistResponse = createResponse();
@@ -81,6 +96,50 @@ test("Vercel API searches, adds, and protects playlist information", async () =>
   assert.equal(playlistResponse.statusCode, 200);
   assert.equal(playlistResponse.body.playlist.name, "Clark Playlist");
   assert.equal(playlistResponse.body.playlist.tracks[0].name, "Song");
+
+  process.env.UPSTASH_REDIS_REST_URL = "https://redis.example";
+  process.env.UPSTASH_REDIS_REST_TOKEN = "redis-token";
+
+  const closeResponse = createResponse();
+  await adminSettings(
+    { method: "PATCH", headers: { cookie }, body: { enabled: false } },
+    closeResponse,
+  );
+  assert.equal(closeResponse.statusCode, 200);
+  assert.equal(closeResponse.body.settings.enabled, false);
+
+  const closedSearchResponse = createResponse();
+  await search({ method: "GET", query: { q: "song" } }, closedSearchResponse);
+  assert.equal(closedSearchResponse.statusCode, 403);
+
+  const passwordResponse = createResponse();
+  await adminSettings(
+    {
+      method: "PATCH",
+      headers: { cookie },
+      body: { currentPassword: "1234", newPassword: "5678" },
+    },
+    passwordResponse,
+  );
+  assert.equal(passwordResponse.statusCode, 200);
+  assert.equal(passwordResponse.body.settings.hasCustomPassword, true);
+
+  const oldPasswordResponse = createResponse();
+  await login(
+    { method: "POST", body: { password: "1234" } },
+    oldPasswordResponse,
+  );
+  assert.equal(oldPasswordResponse.statusCode, 401);
+
+  const newPasswordResponse = createResponse();
+  await login(
+    { method: "POST", body: { password: "5678" } },
+    newPasswordResponse,
+  );
+  assert.equal(newPasswordResponse.statusCode, 200);
+
+  delete process.env.UPSTASH_REDIS_REST_URL;
+  delete process.env.UPSTASH_REDIS_REST_TOKEN;
 });
 
 function spotifyTrack() {

@@ -42,6 +42,39 @@
       <div id="dashboard" class="dashboard" hidden>
         <section class="admin-card">
           <div class="section-heading">
+            <div>
+              <h2>System</h2>
+              <p id="systemStatus" class="system-status"></p>
+            </div>
+            <button id="toggleSystemButton" type="button">Loading...</button>
+          </div>
+          <p id="settingsMessage" class="message" role="status"></p>
+
+          <form id="passwordChangeForm" class="password-change-form">
+            <h3>Change Approval PIN</h3>
+            <input
+              id="currentPasswordInput"
+              type="password"
+              inputmode="numeric"
+              autocomplete="current-password"
+              placeholder="Current PIN"
+              required
+            />
+            <input
+              id="newPasswordInput"
+              type="password"
+              inputmode="numeric"
+              autocomplete="new-password"
+              placeholder="New PIN"
+              minlength="4"
+              required
+            />
+            <button type="submit">Update PIN</button>
+          </form>
+        </section>
+
+        <section class="admin-card">
+          <div class="section-heading">
             <h2>Now Playing</h2>
             <button id="refreshButton" class="text-button" type="button">
               Refresh

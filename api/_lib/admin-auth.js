@@ -1,10 +1,18 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { apiError } from "./http.js";
+import { getSystemSettings, verifyStoredPassword } from "./settings.js";
 
 const cookieName = "dj_admin";
 const sessionValue = "authenticated";
 
-export function verifyAdminPassword(password) {
+export async function verifyAdminPassword(password) {
+  const settings = await getSystemSettings();
+  const storedResult = await verifyStoredPassword(password, settings);
+
+  if (storedResult !== null) {
+    return storedResult;
+  }
+
   const expected = process.env.MENTOR_PASSWORD;
 
   if (!expected) {

@@ -3,7 +3,8 @@
 Search Spotify tracks and add them to a playlist after password confirmation.
 
 The public UI keeps the existing confirmation flow. The authenticated admin page
-at `/admin` shows the current playback and up to 50 playlist items.
+at `/admin` controls requests and shows the current playback and up to 50
+playlist items.
 
 ## Pages
 
@@ -28,9 +29,13 @@ SPOTIFY_REFRESH_TOKEN=...
 SPOTIFY_PLAYLIST_ID=...
 MENTOR_PASSWORD=...
 ADMIN_SESSION_SECRET=...
+UPSTASH_REDIS_REST_URL=...
+UPSTASH_REDIS_REST_TOKEN=...
 ```
 
 `ADMIN_SESSION_SECRET` signs the admin session cookie. Use a long random value.
+The Upstash values enable request control and password changes from `/admin`.
+Without them, requests stay open and `MENTOR_PASSWORD` remains active.
 
 `SPOTIFY_REFRESH_TOKEN` needs:
 
@@ -87,7 +92,7 @@ Open `http://localhost:3000/` for the public UI and
 
 Import this repository into Vercel and add the values from `.env.example` to the
 Production environment variables. Vercel serves the existing UI and the API
-Functions in `api/` without a persistent server or database.
+Functions in `api/` without a persistent application server.
 
 ```txt
 /        public request UI
@@ -96,6 +101,11 @@ Functions in `api/` without a persistent server or database.
 
 The configured Spotify playlist must be owned by, or collaborative with, the
 account that issued `SPOTIFY_REFRESH_TOKEN` for its items to be available.
+
+Install an Upstash Redis integration from the Vercel Marketplace and connect it
+to the project. Vercel adds `UPSTASH_REDIS_REST_URL` and
+`UPSTASH_REDIS_REST_TOKEN` automatically. Add it separately to Preview and
+Production when both environments need admin settings.
 
 ## Check
 
