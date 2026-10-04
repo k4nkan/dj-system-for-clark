@@ -2,3 +2,9 @@
 node_modules/
 .DS_Store
 tools/output/
+
+# Python local files
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/

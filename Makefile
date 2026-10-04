@@ -46,6 +46,7 @@ check:
 	node --check frontend/scripts/app.js
 	node --check frontend/scripts/decor.js
 	node --check tools/generate_qr_code.js
+	python3 -B -m py_compile tools/auth_server.py
 
 help:
 	@printf "Commands:\n"

@@ -26,12 +26,36 @@ SPOTIFY_PLAYLIST_ID=...
 MENTOR_PASSWORD=...
 ```
 
-`SPOTIFY_REFRESH_TOKEN` needs one of:
+`SPOTIFY_REFRESH_TOKEN` needs:
 
 ```txt
 playlist-modify-public
 playlist-modify-private
+playlist-read-private
+user-read-currently-playing
+user-read-playback-state
 ```
+
+## Refresh Token
+
+Register this redirect URI in the Spotify Developer Dashboard:
+
+```txt
+http://[::1]:5000/callback
+```
+
+Then run:
+
+```sh
+python3 -m venv .venv
+. .venv/bin/activate
+python3 -m pip install -r tools/requirements-auth.txt
+python3 tools/auth_server.py
+```
+
+The script reads `SPOTIFY_CLIENT_ID` and `SPOTIFY_CLIENT_SECRET` from `.env`.
+Open `http://[::1]:5000/login`, authorize Spotify, and copy the returned
+refresh token to `.env`.
 
 ## Share
 
